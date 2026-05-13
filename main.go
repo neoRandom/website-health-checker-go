@@ -1,22 +1,55 @@
 package main
 
 import (
-	"http-server/internal"
-	"fmt"
-	"time"
+    "context"
+    "errors"
+    "fmt"
+    "net/http"
+    "os"
+    "os/signal"
+    "http-server/internal"
+    "syscall"
+    "time"
 )
 
 func main() {
-	app := internal.App{
-		Addr: "localhost:8080",
-		ReadTimeout: 5 * time.Second,
-		ReadHeaderTimeout: 5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		IdleTimeout: 15 * time.Second,
-	}
+    app := internal.App{
+        Addr:              "localhost:8080",
+        ReadTimeout:       5 * time.Second,
+        ReadHeaderTimeout: 5 * time.Second,
+        WriteTimeout:      10 * time.Second,
+        IdleTimeout:       15 * time.Second,
+    }
 
-	server := app.GetServer()
+    server := app.GetServer()
 
-	fmt.Printf("Starting server at http://%v...\n", app.Addr)
-	server.ListenAndServe()
+    fmt.Printf("Starting server at http://%v...\n", app.Addr)
+
+    serverErr := make(chan error, 1)
+    go func() {
+        serverErr <- server.ListenAndServe()
+    }()
+
+    ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+    defer stop()
+
+    select {
+    case err := <-serverErr:
+        if err != nil && !errors.Is(err, http.ErrServerClosed) {
+            fmt.Fprintf(os.Stderr, "server error: %v\n", err)
+            os.Exit(1)
+        }
+    case <-ctx.Done():
+        fmt.Println("Shutdown signal received")
+    }
+
+    shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+
+    if err := server.Shutdown(shutdownCtx); err != nil {
+        fmt.Fprintf(os.Stderr, "graceful shutdown failed: %v\n", err)
+        os.Exit(1)
+    }
+
+    fmt.Println("Server stopped gracefully")
 }
