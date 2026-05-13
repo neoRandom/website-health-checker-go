@@ -1,17 +1,22 @@
 package main
 
 import (
+	"http-server/internal"
 	"fmt"
-	"net/http"
+	"time"
 )
 
-func handlerFunc(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "<h1>Hello, internet!</h1>")
-}
-
 func main() {
-	http.HandleFunc("/", handlerFunc)
+	app := internal.App{
+		Addr: "localhost:8080",
+		ReadTimeout: 5 * time.Second,
+		ReadHeaderTimeout: 5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout: 15 * time.Second,
+	}
 
-	fmt.Println("Starting server at http://localhost:8080...")
-	http.ListenAndServe(":8080", nil)
+	server := app.GetServer()
+
+	fmt.Printf("Starting server at http://%v...\n", app.Addr)
+	server.ListenAndServe()
 }
