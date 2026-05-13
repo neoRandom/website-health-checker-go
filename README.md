@@ -30,8 +30,14 @@ nix develop # Sandboxed; `exit` to escape
 
 #### Running the server
 
+Default (recommended)
 ``` zsh
 go run .
+```
+
+For development (dynamic reloading; devs-only)
+``` zsh
+go tool air
 ```
 
 #### Using the app
