@@ -33,6 +33,30 @@ func main() {
     ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
     defer stop()
 
+	watcher := internal.Watcher{
+		Targets: []internal.Target{
+			{
+				ID: "1",
+				Name: "GitHub",
+				URL: "https://github.com",
+			},
+			{
+				ID: "2",
+				Name: "Youtube",
+				URL: "https://www.youtube.com",
+			},
+			{
+				ID: "3",
+				Name: "Google",
+				URL: "https://www.google.com",
+			},
+		},
+	}
+
+	go func() {
+		watcher.Watch(ctx)
+	}()
+
     select {
     case err := <-serverErr:
         if err != nil && !errors.Is(err, http.ErrServerClosed) {
