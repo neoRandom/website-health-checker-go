@@ -7,6 +7,12 @@ import (
 	"time"
 )
 
+const (
+	StatusCodeMethodNotAllowed = 405
+	MinimumStatusCodeForError = 400
+)
+
+
 type Watcher struct {
 	Targets []Target
 }
@@ -15,22 +21,31 @@ func CheckHealth(t *Target) {
 	log.Printf("watcher: Checking %s (%s) at %s", t.Name, t.ID, t.URL)
 
 	start := time.Now()
-	hRes, err := http.Get(t.URL)
+
+	hRes, err := http.Head(t.URL)
+	if hRes.StatusCode == StatusCodeMethodNotAllowed {
+		hRes, err = http.Get(t.URL)
+	}
+
 	dur := time.Since(start)
 
 	cRes := CheckResult{
-		TargetID: t.ID,
-		URL: t.URL,
-		HTTPStatusCode: hRes.StatusCode,
-		Duration: dur,
-		CheckedAt: start,
+		// TargetID:       t.ID,
+		// URL:            t.URL,
+		// HTTPStatusCode: hRes.StatusCode,
+		Duration:       dur,
+		// CheckedAt:      start,
 	}
-	
+
 	if err != nil {
 		cRes.Status = CheckStatusUnhealthy
 		cRes.Error = err.Error()
 	} else {
-		cRes.Status = CheckStatusHealthy
+		if hRes.StatusCode >= MinimumStatusCodeForError {
+			cRes.Status = CheckStatusUnhealthy
+		} else {
+			cRes.Status = CheckStatusHealthy
+		}
 		cRes.Error = ""
 	}
 
@@ -44,7 +59,7 @@ func (w *Watcher) Watch(ctx context.Context) {
 
 	c := 0
 
-	outer:
+outer:
 	for {
 		select {
 		case <-ctx.Done():
