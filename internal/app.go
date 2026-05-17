@@ -7,11 +7,11 @@ import (
 )
 
 type App struct {
-	Addr string
-	ReadTimeout time.Duration
+	Addr              string
+	ReadTimeout       time.Duration
 	ReadHeaderTimeout time.Duration
-	WriteTimeout time.Duration
-	IdleTimeout time.Duration
+	WriteTimeout      time.Duration
+	IdleTimeout       time.Duration
 }
 
 func handlerFunc(w http.ResponseWriter, r *http.Request) {
@@ -26,12 +26,12 @@ func (a *App) GetServer() *http.Server {
 	wMux := WrapAllMiddleware(mux)
 
 	srv := &http.Server{
-		Addr: a.Addr,
-		Handler: wMux,
-		ReadTimeout: a.ReadTimeout,
+		Addr:              a.Addr,
+		Handler:           wMux,
+		ReadTimeout:       a.ReadTimeout,
 		ReadHeaderTimeout: a.ReadHeaderTimeout,
-		WriteTimeout: a.WriteTimeout,
-		IdleTimeout: a.IdleTimeout,
+		WriteTimeout:      a.WriteTimeout,
+		IdleTimeout:       a.IdleTimeout,
 	}
 
 	return srv

@@ -12,10 +12,10 @@ func logMiddleware(next http.Handler) http.Handler {
 			start := time.Now()
 			next.ServeHTTP(w, r)
 			log.Printf(
-				"%s %s %v", 
+				"%s %s %v",
 				r.Method, r.URL.Path, time.Since(start),
 			)
-	})
+		})
 }
 
 func WrapAllMiddleware(next http.Handler) http.Handler {

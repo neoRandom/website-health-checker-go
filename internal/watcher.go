@@ -9,9 +9,8 @@ import (
 
 const (
 	StatusCodeMethodNotAllowed = 405
-	MinimumStatusCodeForError = 400
+	MinimumStatusCodeForError  = 400
 )
-
 
 type Watcher struct {
 	Targets []Target
@@ -33,7 +32,7 @@ func CheckHealth(t *Target) {
 		// TargetID:       t.ID,
 		// URL:            t.URL,
 		// HTTPStatusCode: hRes.StatusCode,
-		Duration:       dur,
+		Duration: dur,
 		// CheckedAt:      start,
 	}
 
