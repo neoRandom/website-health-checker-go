@@ -6,11 +6,11 @@ Technologies within this repository:
 
 - Go (1.26.2): Programming Language
 
-- Templ ( TODO )
+- Templ (0.3.1020): Tool to embed Go in HTML templates
 
-- HTMX ( TODO )
+- HTMX (2.0.10): Library to build modern interactive interfaces directly in HTML
 
-- Tailwind CSS ( TODO )
+- Tailwind CSS (V4.3): Utility-first CSS framework
 
 - Air (github.com/air-verse/air v1.65.1): Dynamic reloading tool
 
@@ -48,7 +48,7 @@ TODO...
 
 ## Features / Roadmap
 
-- [ ] Health-check multiple websites
+- [x] Health-check multiple websites
 
 - [ ] Real-time dashboard
 
