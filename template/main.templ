@@ -1,0 +1,70 @@
+package template
+
+import "strconv"
+
+templ Page() {
+	<html>
+		<head>
+			<title>Website Health-Checker</title>
+			<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js" integrity="sha384-H5SrcfygHmAuTDZphMHqBJLc3FhssKjG7w/CeCpFReSfwBWDTKpkzPP8c+cLsK+V" c rossorigin="anonymous"></script>
+			<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+		</head>
+		<body class="p-4">
+			{ children... }
+		</body>
+	</html>
+}
+
+templ Index(global, session int) {
+	@Page() {
+		<div>
+			<h1 class="text-3xl font-semibold">Welcome to the prototype home page!</h1>
+			<form method="post" action="/hello" class="my-4">
+				<label for="name">What is your name?</label>
+				<input type="text" id="name" name="name" value="John Doe" class="border-1 border-neutral-500 px-1 rounded-md"/>
+				<br/>
+				<button type="submit" class="underline">Click here to go to the Hello page</button>
+			</form>
+			@counts(global, session)
+		</div>
+	}
+}
+
+templ Hello(name string) {
+	@Page() {
+		<div>
+			<p>Hello, { name }!</p>
+		</div>
+	}
+}
+
+templ NotFound() {
+	@Page() {
+		<div>404 - Not Found</div>
+	}
+}
+
+templ counts(global, session int) {
+	<form id="countsForm" action="/" method="POST" hx-post="/" hx-select="#countsForm" hx-swap="outerHTML">
+		<div class="grid grid-cols-2 gap-4 w-fit">
+			<p class="subtitle has-text-centered">Global: { strconv.Itoa(global) }</p>
+			<div>
+				<button
+					class="border-1 border-neutral-500 px-1.5 py-0.5 rounded-md cursor-pointer"
+					type="submit"
+					name="global"
+					value="global"
+				>+1</button>
+			</div>
+			<p class="subtitle has-text-centered">Session: { strconv.Itoa(session) }</p>
+			<div>
+				<button
+					class="border-1 border-neutral-500 px-1.5 py-0.5 rounded-md cursor-pointer"
+					type="submit"
+					name="session"
+					value="session"
+				>+1</button>
+			</div>
+		</div>
+	</form>
+}
