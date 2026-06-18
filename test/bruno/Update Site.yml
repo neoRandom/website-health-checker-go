@@ -1,11 +1,18 @@
 info:
-  name: Get Site List
+  name: Update Site
   type: http
-  seq: 1
+  seq: 3
 
 http:
-  method: GET
+  method: PUT
   url: http://localhost:8080/sites/list
+  body:
+    type: json
+    data: |-
+      {
+        "id": 1,
+        "url": "https://youtube.com"
+      }
   auth: inherit
 
 settings:
