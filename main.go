@@ -6,7 +6,7 @@ import (
 	"http-server/internal/adapter/driven"
 	"http-server/internal/adapter/driver"
 	"http-server/internal/config"
-	"http-server/internal/use_cases"
+	usecases "http-server/internal/use_cases"
 	"log"
 
 	_ "modernc.org/sqlite"
@@ -29,18 +29,18 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to initialized database schema: %v", err)
 	}
-	
+
 	siteRepository := driven.NewSQLiteSiteRepositoryAdapter(db)
 
-	siteListUseCase := &usecases.SiteListUseCases{
-		SiteRepository: siteRepository,
-	}
+	siteListUseCase := usecases.NewSiteListUseCases(siteRepository)
 
-	server := &driver.ServerAdapter{
-		Addr: "localhost:8080",
-		GetSiteList: siteListUseCase.GetSiteList,
-		AddSite: siteListUseCase.AddSite,
-	}
+	server := driver.NewServerAdapter(
+		"localhost:8080",
+		siteListUseCase.GetSiteList,
+		siteListUseCase.AddSite,
+		siteListUseCase.UpdateSite,
+		siteListUseCase.RemoveSite,
+	)
 
-	server.Init()
+	server.Run()
 }

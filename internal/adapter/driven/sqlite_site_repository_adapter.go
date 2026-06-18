@@ -10,11 +10,9 @@ type SQLiteSiteRepositoryAdapter struct {
 }
 
 func NewSQLiteSiteRepositoryAdapter(db *sql.DB) *SQLiteSiteRepositoryAdapter {
-	sra := &SQLiteSiteRepositoryAdapter{
+	return &SQLiteSiteRepositoryAdapter{
 		db: db,
 	}
-
-	return sra
 }
 
 func (r *SQLiteSiteRepositoryAdapter) GetList() ([]*models.Site, error) {
@@ -45,4 +43,22 @@ func (r *SQLiteSiteRepositoryAdapter) Save(s *models.Site) (models.SiteID, error
 
 	id, err := results.LastInsertId()
 	return models.SiteID(id), err
+}
+
+func (r *SQLiteSiteRepositoryAdapter) Update(s *models.Site) error {
+	_, err := r.db.Exec(`UPDATE sites SET url = ? WHERE id = ?`, s.Url, s.Id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *SQLiteSiteRepositoryAdapter) Remove(id models.SiteID) error {
+	_, err := r.db.Exec(`DELETE FROM sites WHERE id = ?`, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

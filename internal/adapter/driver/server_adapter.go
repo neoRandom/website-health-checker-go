@@ -2,7 +2,6 @@ package driver
 
 import (
 	"encoding/json"
-	"fmt"
 	"http-server/internal/adapter/driver/dto"
 	"http-server/internal/adapter/driver/middleware"
 	"http-server/internal/domain/ports/driver"
@@ -11,16 +10,34 @@ import (
 )
 
 type ServerAdapter struct {
-	Addr        string
-	GetSiteList driver.GetSiteList
-	AddSite     driver.AddSite
+	addr        string
+	getSiteList driver.GetSiteList
+	addSite     driver.AddSite
+	updateSite  driver.UpdateSite
+	removeSite  driver.RemoveSite
 }
 
-func (s *ServerAdapter) Init() {
+func NewServerAdapter(
+	addr string,
+	getSiteList driver.GetSiteList,
+	addSite driver.AddSite,
+	updateSite driver.UpdateSite,
+	removeSite driver.RemoveSite,
+) *ServerAdapter {
+	return &ServerAdapter{
+		addr:        addr,
+		getSiteList: getSiteList,
+		addSite:     addSite,
+		updateSite:  updateSite,
+		removeSite:  removeSite,
+	}
+}
+
+func (s *ServerAdapter) Run() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello, world!")
+		w.Write([]byte("Hello, world!"))
 	})
 
 	mux.HandleFunc("/sites/list", s.handleSiteList)
@@ -32,11 +49,11 @@ func (s *ServerAdapter) Init() {
 	)
 
 	srv := http.Server{
-		Addr:    s.Addr,
+		Addr:    s.addr,
 		Handler: wMux,
 	}
 
-	log.Printf("Server starting at http://%v...", s.Addr)
+	log.Printf("Server starting at http://%v...", s.addr)
 	srv.ListenAndServe()
 }
 
@@ -44,20 +61,21 @@ func (s *ServerAdapter) handleSiteList(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 
 	case http.MethodGet:
-		l, err := s.GetSiteList()
+		l, err := s.getSiteList()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			break
 		}
 
-		body := make([]*dto.SiteResponse, len(l))
+		body := make([]*dto.SiteJSON, len(l))
 		for i, site := range l {
-			body[i] = &dto.SiteResponse{
+			body[i] = &dto.SiteJSON{
 				Id:  site.Id,
 				Url: site.Url,
 			}
 		}
 
+		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(dto.GetSiteListResponse{
 			Body: body,
 		})
@@ -69,16 +87,36 @@ func (s *ServerAdapter) handleSiteList(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		s, err := s.AddSite(req.Url)
+		s, err := s.addSite(req.Url)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			break
 		}
 
-		json.NewEncoder(w).Encode(dto.SiteResponse{
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(dto.SiteJSON{
 			Id:  s.Id,
 			Url: s.Url,
 		})
+
+	case http.MethodPut:
+		var req dto.SiteJSON
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			break
+		}
+
+		err := s.updateSite(req.Id, req.Url)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			break
+		}
+
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"message": "success"}`))
+
+	case http.MethodDelete:
+		break
 
 	default:
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)

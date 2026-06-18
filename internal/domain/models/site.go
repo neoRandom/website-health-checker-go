@@ -3,6 +3,6 @@ package models
 type SiteID int64
 
 type Site struct {
-	Id SiteID
+	Id  SiteID
 	Url string
 }
