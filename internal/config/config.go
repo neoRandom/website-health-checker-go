@@ -5,8 +5,8 @@ import (
 )
 
 type Config struct {
-	DatabasePath string `envconfig:"DATABASE_PATH" default:"./main.db"`
-	DatabaseType string `envconfig:"DATABASE_TYPE" default:"sqlite3"`
+	DatabasePath string `envconfig:"DATABASE_PATH" default:"data/main.db"`
+	DatabaseType string `envconfig:"DATABASE_TYPE" default:"sqlite"`
 }
 
 func Load() (Config, error) {
