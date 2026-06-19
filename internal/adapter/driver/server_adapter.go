@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"http-server/internal/adapter/driver/dto"
 	"http-server/internal/adapter/driver/middleware"
+	"http-server/internal/domain/models"
 	"http-server/internal/domain/ports/driver"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type ServerAdapter struct {
@@ -40,7 +42,10 @@ func (s *ServerAdapter) Run() {
 		w.Write([]byte("Hello, world!"))
 	})
 
-	mux.HandleFunc("/sites/list", s.handleSiteList)
+	mux.HandleFunc("GET /sites/list", s.handleGetSiteList)
+	mux.HandleFunc("POST /sites/list", s.handleAddSite)
+	mux.HandleFunc("PUT /sites/list", s.handleUpdateSite)
+	mux.HandleFunc("DELETE /sites/list/{id}", s.handleRemoveSite)
 
 	wMux := middleware.ChainMiddleware(
 		mux,
@@ -57,68 +62,77 @@ func (s *ServerAdapter) Run() {
 	srv.ListenAndServe()
 }
 
-func (s *ServerAdapter) handleSiteList(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-
-	case http.MethodGet:
-		l, err := s.getSiteList()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			break
-		}
-
-		body := make([]*dto.SiteJSON, len(l))
-		for i, site := range l {
-			body[i] = &dto.SiteJSON{
-				Id:  site.Id,
-				Url: site.Url,
-			}
-		}
-
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(dto.GetSiteListResponse{
-			Body: body,
-		})
-
-	case http.MethodPost:
-		var req dto.AddSiteRequest
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			break
-		}
-
-		s, err := s.addSite(req.Url)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			break
-		}
-
-		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(dto.SiteJSON{
-			Id:  s.Id,
-			Url: s.Url,
-		})
-
-	case http.MethodPut:
-		var req dto.SiteJSON
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			break
-		}
-
-		err := s.updateSite(req.Id, req.Url)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			break
-		}
-
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"message": "success"}`))
-
-	case http.MethodDelete:
-		break
-
-	default:
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+func (s *ServerAdapter) handleGetSiteList(w http.ResponseWriter, r *http.Request) {
+	sList, err := s.getSiteList()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
+
+	body := make([]*dto.SiteJSON, len(sList))
+	for i, site := range sList {
+		body[i] = &dto.SiteJSON{
+			Id:  site.Id,
+			Url: site.Url,
+		}
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(dto.GetSiteListResponse{
+		Body: body,
+	})
+}
+
+func (s *ServerAdapter) handleAddSite(w http.ResponseWriter, r *http.Request) {
+	var req dto.AddSiteRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	created, err := s.addSite(req.Url)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(dto.SiteJSON{
+		Id:  created.Id,
+		Url: created.Url,
+	})
+}
+
+func (s *ServerAdapter) handleUpdateSite(w http.ResponseWriter, r *http.Request) {
+	var req dto.SiteJSON
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err := s.updateSite(req.Id, req.Url)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"message": "success"}`))
+}
+
+func (s *ServerAdapter) handleRemoveSite(w http.ResponseWriter, r *http.Request) {
+	idString := r.PathValue("id")
+	
+	id, err := strconv.ParseInt(idString, 10, 64)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	
+	err = s.removeSite(models.SiteID(id))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
