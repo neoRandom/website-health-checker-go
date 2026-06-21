@@ -4,6 +4,8 @@ services:
     ports:
       - "8080:8080"
     restart: unless-stopped
+    volumes:
+      - app_data:/app/data
     depends_on:
       - prometheus
 
@@ -29,5 +31,6 @@ services:
       - prometheus
 
 volumes:
+  app_data:
   prometheus_data:
   grafana_data:
