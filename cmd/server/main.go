@@ -1,13 +1,16 @@
 package main
 
 import (
+	"database/sql"
 	"http-server/internal/adapter/driven"
 	"http-server/internal/adapter/driver"
 	"http-server/internal/config"
 	"http-server/internal/database"
 	usecases "http-server/internal/use_cases"
-	"database/sql"
 	"log"
+
+	"net/http"
+	_ "net/http/pprof"
 
 	_ "modernc.org/sqlite"
 )
@@ -46,5 +49,12 @@ func main() {
 	)
 
 	//
+	go func() {
+		log.Println("Initializing pprof at http://localhost:6060...")
+		if err := http.ListenAndServe("localhost:6060", nil); err != nil {
+			log.Printf("Error initializing pprof: %v", err)
+		}
+	}()
+
 	server.Run()
 }
