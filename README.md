@@ -16,6 +16,16 @@ Technologies within this repository:
 
 - Nix: Reproducible and declarative package management tool
 
+- Docker: ...
+
+- Docker Compose: ...
+
+- Bruno: ...
+
+- Prometheus: ...
+
+- Grafana: ...
+
 > Disclaimer: This project used AI for guiding, learning, and controlled code generation. No decision were made without human analysis and intervention.
 
 ## Installation and Usage
@@ -52,7 +62,7 @@ TODO...
 
 - [ ] Real-time dashboard
 
-- [ ] User-modifiable list of URLs
+- [x] User-modifiable list of URLs
 
 #### Technical details:
 
@@ -61,12 +71,11 @@ TODO...
     - [ ] Single Responsibility
     - [ ] Separate business logic from external dependencies
 
-- [ ] Add diagnosing methods
-    - [ ] Profilling via `runtime/pprof`
-    - [ ] Tracing via net/trace
-    - [ ] Monitoring via Prometheus/Grafana (optional)
+- [x] Add diagnosing methods
+    - [x] Monitoring via Prometheus/Grafana
+    - [x] Profiling via `net/http/pprof`
 
-- [ ] Add ADRs and Code Documentation
+- [x] Add ADRs and Code Documentation
 
 #### Challenges:
 
