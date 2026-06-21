@@ -32,6 +32,8 @@ func main() {
 
 	siteRepository := driven.NewSQLiteSiteRepositoryAdapter(db)
 
+	metricsCollector := driven.NewPrometheusMetricsCollector(siteRepository)
+
 	siteListUseCase := usecases.NewSiteListUseCases(siteRepository)
 
 	server := driver.NewServerAdapter(
@@ -40,6 +42,7 @@ func main() {
 		siteListUseCase.AddSite,
 		siteListUseCase.UpdateSite,
 		siteListUseCase.RemoveSite,
+		metricsCollector,
 	)
 
 	server.Run()

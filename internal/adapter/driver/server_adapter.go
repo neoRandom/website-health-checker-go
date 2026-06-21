@@ -11,12 +11,18 @@ import (
 	"strconv"
 )
 
+type MetricsCollector interface {
+	MetricsHandler() http.Handler
+	MetricsMiddleware(next http.Handler) http.Handler
+}
+
 type ServerAdapter struct {
-	addr        string
-	getSiteList driver.GetSiteList
-	addSite     driver.AddSite
-	updateSite  driver.UpdateSite
-	removeSite  driver.RemoveSite
+	addr             string
+	getSiteList      driver.GetSiteList
+	addSite          driver.AddSite
+	updateSite       driver.UpdateSite
+	removeSite       driver.RemoveSite
+	metricsCollector MetricsCollector
 }
 
 func NewServerAdapter(
@@ -25,13 +31,15 @@ func NewServerAdapter(
 	addSite driver.AddSite,
 	updateSite driver.UpdateSite,
 	removeSite driver.RemoveSite,
+	metricsCollector MetricsCollector,
 ) *ServerAdapter {
 	return &ServerAdapter{
-		addr:        addr,
-		getSiteList: getSiteList,
-		addSite:     addSite,
-		updateSite:  updateSite,
-		removeSite:  removeSite,
+		addr:             addr,
+		getSiteList:      getSiteList,
+		addSite:          addSite,
+		updateSite:       updateSite,
+		removeSite:       removeSite,
+		metricsCollector: metricsCollector,
 	}
 }
 
@@ -47,8 +55,11 @@ func (s *ServerAdapter) Run() {
 	mux.HandleFunc("PUT /sites/list", s.handleUpdateSite)
 	mux.HandleFunc("DELETE /sites/list/{id}", s.handleRemoveSite)
 
+	mux.Handle("/metrics", s.metricsCollector.MetricsHandler())
+
 	wMux := middleware.ChainMiddleware(
 		mux,
+		s.metricsCollector.MetricsMiddleware,
 		middleware.LogMiddleware,
 		middleware.CorsMiddleware,
 	)
@@ -122,13 +133,13 @@ func (s *ServerAdapter) handleUpdateSite(w http.ResponseWriter, r *http.Request)
 
 func (s *ServerAdapter) handleRemoveSite(w http.ResponseWriter, r *http.Request) {
 	idString := r.PathValue("id")
-	
+
 	id, err := strconv.ParseInt(idString, 10, 64)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	
+
 	err = s.removeSite(models.SiteID(id))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
