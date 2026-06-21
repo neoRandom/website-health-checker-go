@@ -37,7 +37,7 @@ func main() {
 	siteListUseCase := usecases.NewSiteListUseCases(siteRepository)
 
 	server := driver.NewServerAdapter(
-		"localhost:8080",
+		":8080",
 		siteListUseCase.GetSiteList,
 		siteListUseCase.AddSite,
 		siteListUseCase.UpdateSite,
