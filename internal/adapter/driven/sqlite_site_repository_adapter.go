@@ -62,3 +62,9 @@ func (r *SQLiteSiteRepositoryAdapter) Remove(id models.SiteID) error {
 
 	return nil
 }
+
+func (r *SQLiteSiteRepositoryAdapter) Count() (uint64, error) {
+	var c uint64
+	err := r.db.QueryRow(`SELECT COUNT(*) FROM sites`).Scan(&c)
+	return c, err
+}

@@ -7,4 +7,5 @@ type SiteRepository interface {
 	Save(s *models.Site) (models.SiteID, error)
 	Update(s *models.Site) error
 	Remove(id models.SiteID) error
+	Count() (uint64, error)
 }
