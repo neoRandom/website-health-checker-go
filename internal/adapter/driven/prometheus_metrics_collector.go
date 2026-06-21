@@ -2,20 +2,60 @@ package driven
 
 import (
 	"http-server/internal/domain/ports/driven"
-	"log"
 	"net/http"
+	"strconv"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+type responseWriterWrapper struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func (rw *responseWriterWrapper) WriteHeader(code int) {
+	rw.statusCode = code
+	rw.ResponseWriter.WriteHeader(code)
+}
+
 type PrometheusMetricsCollector struct {
-	siteRepository driven.SiteRepository
+	siteRepository  driven.SiteRepository
+	totalRequests   prometheus.Counter
+	requestDuration *prometheus.HistogramVec
 }
 
 func NewPrometheusMetricsCollector(siteRepository driven.SiteRepository) *PrometheusMetricsCollector {
+	totalRequests := prometheus.NewCounter(prometheus.CounterOpts{
+		Name: "http_requests_total",
+		Help: "Total number of HTTP requests",
+	})
+
+	requestDuration := prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "http_request_duration_seconds",
+		Help:    "HTTP request latency",
+		Buckets: prometheus.DefBuckets,
+	}, []string{"route", "method", "status"})
+
+	monitoredTargets := prometheus.NewGaugeFunc(prometheus.GaugeOpts{
+		Name: "monitored_targets",
+		Help: "Number of actively monitored targets",
+	}, func() float64 {
+		c, _ := siteRepository.Count()
+		return float64(c)
+	})
+
+	prometheus.MustRegister(
+		totalRequests, 
+		requestDuration, 
+		monitoredTargets,
+	)
 
 	return &PrometheusMetricsCollector{
-		siteRepository: siteRepository,
+		siteRepository:  siteRepository,
+		totalRequests:   totalRequests,
+		requestDuration: requestDuration,
 	}
 }
 
@@ -26,17 +66,19 @@ func (mc *PrometheusMetricsCollector) MetricsHandler() http.Handler {
 func (mc *PrometheusMetricsCollector) MetricsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
+			wrappedW := &responseWriterWrapper{
+				ResponseWriter: w,
+				statusCode: http.StatusOK,
+			}
+
 			start := time.Now()
-			next.ServeHTTP(w, r)
-			mc.requestDuration(time.Since(start))
-			mc.increaseRequestCounter()
+			next.ServeHTTP(wrappedW, r)
+			
+			mc.requestDuration.WithLabelValues(
+				r.URL.Path,
+				r.Method,
+				strconv.Itoa(wrappedW.statusCode),
+			).Observe(float64(time.Since(start)))
+			mc.totalRequests.Inc()
 		})
-}
-
-func (mc *PrometheusMetricsCollector) increaseRequestCounter() {
-	log.Println("NEW REQUEST")
-}
-
-func (mc *PrometheusMetricsCollector) requestDuration(duration time.Duration) {
-	log.Println("REQUEST DURATION: ", duration)
 }

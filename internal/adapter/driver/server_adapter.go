@@ -69,7 +69,7 @@ func (s *ServerAdapter) Run() {
 		Handler: wMux,
 	}
 
-	log.Printf("Server starting at http://%v...", s.addr)
+	log.Printf("Server starting at http://localhost%v...", s.addr)
 	srv.ListenAndServe()
 }
 
