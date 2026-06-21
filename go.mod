@@ -7,7 +7,11 @@ tool (
 	github.com/air-verse/air
 )
 
-require github.com/alexedwards/scs/v2 v2.9.0
+require (
+	github.com/kelseyhightower/envconfig v1.4.0
+	github.com/prometheus/client_golang v1.23.2
+	modernc.org/sqlite v1.52.0
+)
 
 require (
 	dario.cat/mergo v1.0.2 // indirect
@@ -28,16 +32,13 @@ require (
 	github.com/gohugoio/hugo v0.149.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
-	github.com/kelseyhightower/envconfig v1.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mattn/go-sqlite3 v1.14.45 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/natefinch/atomic v1.0.1 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
-	github.com/prometheus/client_golang v1.23.2 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.66.1 // indirect
 	github.com/prometheus/procfs v0.16.1 // indirect
@@ -56,5 +57,4 @@ require (
 	modernc.org/libc v1.72.3 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
-	modernc.org/sqlite v1.52.0 // indirect
 )
