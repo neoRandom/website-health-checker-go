@@ -12,7 +12,6 @@ import (
 )
 
 type MetricsCollector interface {
-	MetricsHandler() http.Handler
 	MetricsMiddleware(next http.Handler) http.Handler
 }
 
@@ -54,8 +53,6 @@ func (s *AppServerAdapter) Start() error {
 	mux.HandleFunc("POST /sites/list", s.handleAddSite)
 	mux.HandleFunc("PUT /sites/list", s.handleUpdateSite)
 	mux.HandleFunc("DELETE /sites/list/{id}", s.handleRemoveSite)
-
-	mux.Handle("/metrics", s.metricsCollector.MetricsHandler())
 
 	wMux := middleware.ChainMiddleware(
 		mux,
