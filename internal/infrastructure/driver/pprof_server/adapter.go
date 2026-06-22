@@ -6,17 +6,18 @@ import (
 	_ "net/http/pprof"
 )
 
-type PprofServerAdapter struct {}
+type PprofServerAdapter struct {
+	addr string
+}
 
-func NewPprofServerAdapter() *PprofServerAdapter {
-	return &PprofServerAdapter{}
+func NewPprofServerAdapter(addr string) *PprofServerAdapter {
+	return &PprofServerAdapter{
+		addr: addr,
+	}
 }
 
 func (ps *PprofServerAdapter) Start() error {
-	log.Println("Initializing pprof at http://localhost:6060...")
-	if err := http.ListenAndServe("localhost:6060", nil); err != nil {
-		log.Printf("Error initializing pprof: %v", err)
-		return err
-	}
-	return nil
+	log.Printf("pprof server starting at http://localhost%v...", ps.addr)
+	
+	return http.ListenAndServe(ps.addr, nil)
 }

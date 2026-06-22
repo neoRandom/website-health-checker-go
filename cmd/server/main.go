@@ -39,7 +39,7 @@ func main() {
 	metricsCollector := driven.NewPrometheusMetricsCollector(siteRepository)
 	siteListUseCase := usecase.NewSiteListUseCases(siteRepository)
 
-	pprofServer := pprofserver.NewPprofServerAdapter()
+	pprofServer := pprofserver.NewPprofServerAdapter(":6060")
 	metricsExporter := prometheusmetricsexporter.NewPrometheusMetricsExporterAdapter(
 		":2112",
 		metricsCollector,
