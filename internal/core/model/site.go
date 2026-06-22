@@ -1,4 +1,4 @@
-package models
+package model
 
 type SiteID int64
 

@@ -11,6 +11,6 @@ type GetSiteListResponse struct {
 }
 
 type SiteJSON struct {
-	Id  models.SiteID `json:"id"`
+	Id  model.SiteID `json:"id"`
 	Url string        `json:"url"`
 }

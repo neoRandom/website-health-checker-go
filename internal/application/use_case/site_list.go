@@ -15,12 +15,12 @@ func NewSiteListUseCases(siteRepository driven.SiteRepository) *SiteListUseCases
 	}
 }
 
-func (uc *SiteListUseCases) GetSiteList() ([]*models.Site, error) {
+func (uc *SiteListUseCases) GetSiteList() ([]*model.Site, error) {
 	return uc.siteRepository.GetList()
 }
 
-func (uc *SiteListUseCases) AddSite(url string) (*models.Site, error) {
-	s := &models.Site{
+func (uc *SiteListUseCases) AddSite(url string) (*model.Site, error) {
+	s := &model.Site{
 		Url: url,
 	}
 
@@ -33,8 +33,8 @@ func (uc *SiteListUseCases) AddSite(url string) (*models.Site, error) {
 	return s, nil
 }
 
-func (uc *SiteListUseCases) UpdateSite(id models.SiteID, url string) error {
-	s := &models.Site{
+func (uc *SiteListUseCases) UpdateSite(id model.SiteID, url string) error {
+	s := &model.Site{
 		Id:  id,
 		Url: url,
 	}
@@ -42,6 +42,6 @@ func (uc *SiteListUseCases) UpdateSite(id models.SiteID, url string) error {
 	return uc.siteRepository.Update(s)
 }
 
-func (uc *SiteListUseCases) RemoveSite(id models.SiteID) error {
+func (uc *SiteListUseCases) RemoveSite(id model.SiteID) error {
 	return uc.siteRepository.Remove(id)
 }

@@ -15,17 +15,17 @@ func NewSQLiteSiteRepositoryAdapter(db *sql.DB) *SQLiteSiteRepositoryAdapter {
 	}
 }
 
-func (r *SQLiteSiteRepositoryAdapter) GetList() ([]*models.Site, error) {
+func (r *SQLiteSiteRepositoryAdapter) GetList() ([]*model.Site, error) {
 	rows, err := r.db.Query(`SELECT id, url FROM sites`)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var list []*models.Site
+	var list []*model.Site
 
 	for rows.Next() {
-		var site models.Site
+		var site model.Site
 		if err := rows.Scan(&site.Id, &site.Url); err != nil {
 			return nil, err
 		}
@@ -35,17 +35,17 @@ func (r *SQLiteSiteRepositoryAdapter) GetList() ([]*models.Site, error) {
 	return list, nil
 }
 
-func (r *SQLiteSiteRepositoryAdapter) Save(s *models.Site) (models.SiteID, error) {
+func (r *SQLiteSiteRepositoryAdapter) Save(s *model.Site) (model.SiteID, error) {
 	results, err := r.db.Exec(`INSERT INTO sites (url) VALUES (?)`, s.Url)
 	if err != nil {
-		return models.SiteID(0), err
+		return model.SiteID(0), err
 	}
 
 	id, err := results.LastInsertId()
-	return models.SiteID(id), err
+	return model.SiteID(id), err
 }
 
-func (r *SQLiteSiteRepositoryAdapter) Update(s *models.Site) error {
+func (r *SQLiteSiteRepositoryAdapter) Update(s *model.Site) error {
 	_, err := r.db.Exec(`UPDATE sites SET url = ? WHERE id = ?`, s.Url, s.Id)
 	if err != nil {
 		return err
@@ -54,7 +54,7 @@ func (r *SQLiteSiteRepositoryAdapter) Update(s *models.Site) error {
 	return nil
 }
 
-func (r *SQLiteSiteRepositoryAdapter) Remove(id models.SiteID) error {
+func (r *SQLiteSiteRepositoryAdapter) Remove(id model.SiteID) error {
 	_, err := r.db.Exec(`DELETE FROM sites WHERE id = ?`, id)
 	if err != nil {
 		return err
