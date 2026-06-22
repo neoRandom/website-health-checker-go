@@ -13,13 +13,5 @@ API:
     - { id: <target id>, url: <new url>}
 - DELETE /sites/list/{id} (Removes target)
 
-- GET /metrics (show system statistics: total uptime, how many targets are actively being monitored, and the memory footprint)
-    - {
-        uptime_seconds: int
-        monitored_targets: int
-        memory_alloc_bytes: int
-        memory_sys_bytes: int
-        total_requests: int
-        requests_per_minute: float
-    }
+- GET /metrics (export Prometheus-compatible system statistics)
 ```
