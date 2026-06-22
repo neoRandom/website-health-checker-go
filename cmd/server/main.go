@@ -1,17 +1,15 @@
 package main
 
 import (
-	"database/sql"
-	"http-server/internal/infrastructure/driven"
-	appserver "http-server/internal/infrastructure/driver/app_server"
+	"log"
 	"http-server/internal/infrastructure/config"
 	"http-server/internal/infrastructure/database"
+	"http-server/internal/infrastructure/driven"
 	usecase "http-server/internal/application/use_case"
-	"log"
-
-	"net/http"
-	_ "net/http/pprof"
-
+	pprofserver "http-server/internal/infrastructure/driver/pprof_server"
+	appserver "http-server/internal/infrastructure/driver/app_server"
+	
+	"database/sql"
 	_ "modernc.org/sqlite"
 )
 
@@ -39,7 +37,8 @@ func main() {
 	metricsCollector := driven.NewPrometheusMetricsCollector(siteRepository)
 	siteListUseCase := usecase.NewSiteListUseCases(siteRepository)
 
-	server := appserver.NewAppServerAdapter(
+	pprofServer := pprofserver.NewPprofServerAdapter()
+	appServer := appserver.NewAppServerAdapter(
 		":8080",
 		siteListUseCase.GetSiteList,
 		siteListUseCase.AddSite,
@@ -49,12 +48,6 @@ func main() {
 	)
 
 	//
-	go func() {
-		log.Println("Initializing pprof at http://localhost:6060...")
-		if err := http.ListenAndServe("localhost:6060", nil); err != nil {
-			log.Printf("Error initializing pprof: %v", err)
-		}
-	}()
-
-	server.Run()
+	go pprofServer.Start()
+	go appServer.Start()
 }

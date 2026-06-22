@@ -2,10 +2,10 @@ package appserver
 
 import (
 	"encoding/json"
+	"http-server/internal/core/interface/driver"
+	models "http-server/internal/core/model"
 	"http-server/internal/infrastructure/driver/app_server/dto"
 	"http-server/internal/infrastructure/driver/app_server/middleware"
-	"http-server/internal/core/interface/driver"
-	"http-server/internal/core/model"
 	"log"
 	"net/http"
 	"strconv"
@@ -43,7 +43,7 @@ func NewAppServerAdapter(
 	}
 }
 
-func (s *AppServerAdapter) Run() {
+func (s *AppServerAdapter) Start() error {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -70,7 +70,7 @@ func (s *AppServerAdapter) Run() {
 	}
 
 	log.Printf("Server starting at http://localhost%v...", s.addr)
-	srv.ListenAndServe()
+	return srv.ListenAndServe()
 }
 
 func (s *AppServerAdapter) handleGetSiteList(w http.ResponseWriter, r *http.Request) {
