@@ -1,6 +1,6 @@
 package driven
 
-import "http-server/internal/domain/models"
+import "http-server/internal/core/model"
 
 type SiteRepository interface {
 	GetList() ([]*models.Site, error)

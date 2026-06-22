@@ -1,7 +1,7 @@
 package driven
 
 import (
-	"http-server/internal/domain/ports/driven"
+	"http-server/internal/core/interface/driven"
 	"net/http"
 	"strconv"
 	"time"

@@ -1,6 +1,6 @@
 package driver
 
-import "http-server/internal/domain/models"
+import "http-server/internal/core/model"
 
 type GetSiteList func() ([]*models.Site, error)
 type AddSite func(url string) (*models.Site, error)

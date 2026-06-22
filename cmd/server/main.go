@@ -2,11 +2,11 @@ package main
 
 import (
 	"database/sql"
-	"http-server/internal/adapter/driven"
-	"http-server/internal/adapter/driver"
-	"http-server/internal/config"
-	"http-server/internal/database"
-	usecases "http-server/internal/use_cases"
+	"http-server/internal/infrastructure/driven"
+	appserver "http-server/internal/infrastructure/driver/app_server"
+	"http-server/internal/infrastructure/config"
+	"http-server/internal/infrastructure/database"
+	usecase "http-server/internal/application/use_case"
 	"log"
 
 	"net/http"
@@ -37,9 +37,9 @@ func main() {
 	//
 	siteRepository := driven.NewSQLiteSiteRepositoryAdapter(db)
 	metricsCollector := driven.NewPrometheusMetricsCollector(siteRepository)
-	siteListUseCase := usecases.NewSiteListUseCases(siteRepository)
+	siteListUseCase := usecase.NewSiteListUseCases(siteRepository)
 
-	server := driver.NewServerAdapter(
+	server := appserver.NewAppServerAdapter(
 		":8080",
 		siteListUseCase.GetSiteList,
 		siteListUseCase.AddSite,

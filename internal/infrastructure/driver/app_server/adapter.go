@@ -1,11 +1,11 @@
-package driver
+package appserver
 
 import (
 	"encoding/json"
-	"http-server/internal/adapter/driver/dto"
-	"http-server/internal/adapter/driver/middleware"
-	"http-server/internal/domain/models"
-	"http-server/internal/domain/ports/driver"
+	"http-server/internal/infrastructure/driver/app_server/dto"
+	"http-server/internal/infrastructure/driver/app_server/middleware"
+	"http-server/internal/core/interface/driver"
+	"http-server/internal/core/model"
 	"log"
 	"net/http"
 	"strconv"
@@ -16,7 +16,7 @@ type MetricsCollector interface {
 	MetricsMiddleware(next http.Handler) http.Handler
 }
 
-type ServerAdapter struct {
+type AppServerAdapter struct {
 	addr             string
 	getSiteList      driver.GetSiteList
 	addSite          driver.AddSite
@@ -25,15 +25,15 @@ type ServerAdapter struct {
 	metricsCollector MetricsCollector
 }
 
-func NewServerAdapter(
+func NewAppServerAdapter(
 	addr string,
 	getSiteList driver.GetSiteList,
 	addSite driver.AddSite,
 	updateSite driver.UpdateSite,
 	removeSite driver.RemoveSite,
 	metricsCollector MetricsCollector,
-) *ServerAdapter {
-	return &ServerAdapter{
+) *AppServerAdapter {
+	return &AppServerAdapter{
 		addr:             addr,
 		getSiteList:      getSiteList,
 		addSite:          addSite,
@@ -43,7 +43,7 @@ func NewServerAdapter(
 	}
 }
 
-func (s *ServerAdapter) Run() {
+func (s *AppServerAdapter) Run() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -73,7 +73,7 @@ func (s *ServerAdapter) Run() {
 	srv.ListenAndServe()
 }
 
-func (s *ServerAdapter) handleGetSiteList(w http.ResponseWriter, r *http.Request) {
+func (s *AppServerAdapter) handleGetSiteList(w http.ResponseWriter, r *http.Request) {
 	sList, err := s.getSiteList()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -94,7 +94,7 @@ func (s *ServerAdapter) handleGetSiteList(w http.ResponseWriter, r *http.Request
 	})
 }
 
-func (s *ServerAdapter) handleAddSite(w http.ResponseWriter, r *http.Request) {
+func (s *AppServerAdapter) handleAddSite(w http.ResponseWriter, r *http.Request) {
 	var req dto.AddSiteRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -114,7 +114,7 @@ func (s *ServerAdapter) handleAddSite(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (s *ServerAdapter) handleUpdateSite(w http.ResponseWriter, r *http.Request) {
+func (s *AppServerAdapter) handleUpdateSite(w http.ResponseWriter, r *http.Request) {
 	var req dto.SiteJSON
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -131,7 +131,7 @@ func (s *ServerAdapter) handleUpdateSite(w http.ResponseWriter, r *http.Request)
 	w.Write([]byte(`{"message": "success"}`))
 }
 
-func (s *ServerAdapter) handleRemoveSite(w http.ResponseWriter, r *http.Request) {
+func (s *AppServerAdapter) handleRemoveSite(w http.ResponseWriter, r *http.Request) {
 	idString := r.PathValue("id")
 
 	id, err := strconv.ParseInt(idString, 10, 64)

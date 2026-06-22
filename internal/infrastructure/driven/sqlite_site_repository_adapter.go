@@ -2,7 +2,7 @@ package driven
 
 import (
 	"database/sql"
-	"http-server/internal/domain/models"
+	"http-server/internal/core/model"
 )
 
 type SQLiteSiteRepositoryAdapter struct {

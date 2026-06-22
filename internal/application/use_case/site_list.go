@@ -1,8 +1,8 @@
-package usecases
+package usecase
 
 import (
-	"http-server/internal/domain/models"
-	"http-server/internal/domain/ports/driven"
+	"http-server/internal/core/model"
+	"http-server/internal/core/interface/driven"
 )
 
 type SiteListUseCases struct {

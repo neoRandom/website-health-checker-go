@@ -1,6 +1,6 @@
 package dto
 
-import "http-server/internal/domain/models"
+import "http-server/internal/core/model"
 
 type AddSiteRequest struct {
 	Url string `json:"url"`
