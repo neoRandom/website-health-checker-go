@@ -53,7 +53,7 @@ func main() {
 		metricsCollector,
 	)
 
-	//
+	// TODO: Implement graceful shutdown. If not, storage may corrupt.
 	go pprofServer.Start()
 	go metricsExporter.Start()
 	go appServer.Start()
