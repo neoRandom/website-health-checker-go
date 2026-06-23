@@ -3,8 +3,10 @@ API:
 
 - GET / (Dashboard with everything)
 
-- GET /sites?=<number>&offset=<number>
+- GET /sites
+    - HTMX integration
 - GET /sites/check?url=<target url>
+    - HTMX integration
 
 - GET /sites/list (Current targets)
 - POST /sites/list (Add new target)
