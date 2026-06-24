@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"errors"
 	usecase "http-server/internal/application/use_case"
 	"http-server/internal/infrastructure/config"
 	"http-server/internal/infrastructure/database"
@@ -12,6 +14,11 @@ import (
 	"log"
 
 	"database/sql"
+	"net/http"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 
 	_ "modernc.org/sqlite"
 )
@@ -25,6 +32,9 @@ import (
 // Add error messages and runtime checks
 
 func main() {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatal(err)
@@ -74,9 +84,36 @@ func main() {
 		siteCheckUseCases.CheckSites,
 	)
 
-	// TODO: Implement graceful shutdown. If not, storage may corrupt.
-	go pprofServer.Start()
-	go metricsExporter.Start()
-	go appServer.Start()
-	go scheduler.Start()
+	//
+
+	var wg sync.WaitGroup
+	errCh := make(chan error, 4)
+	startService := func(name string, start func() error) {
+		wg.Go(func() {
+			if err := start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+				errCh <- err
+				stop()
+				return
+			}
+
+			log.Printf("%s stopped", name)
+		})
+	}
+
+	startService("pprof server", func() error { return pprofServer.Start(ctx) })
+	startService("metrics exporter", func() error { return metricsExporter.Start(ctx) })
+	startService("app server", func() error { return appServer.Start(ctx) })
+	startService("scheduler", func() error { return scheduler.Start(ctx) })
+
+	<-ctx.Done()
+	log.Printf("Shutdown requested: %v", ctx.Err())
+
+	wg.Wait()
+	close(errCh)
+
+	for err := range errCh {
+		if err != nil {
+			log.Printf("service error: %v", err)
+		}
+	}
 }

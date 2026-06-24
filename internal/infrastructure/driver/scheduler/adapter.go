@@ -1,6 +1,7 @@
 package scheduler
 
 import (
+	"context"
 	"http-server/internal/core/interface/driven"
 	"http-server/internal/core/interface/driver"
 	"log"
@@ -22,7 +23,7 @@ func NewSchedulerAdapter(
 	}
 }
 
-func (a *SchedulerAdapter) Start() error {
+func (a *SchedulerAdapter) Start(ctx context.Context) error {
 	targets, err := a.siteRepository.GetList()
 	if err != nil {
 		return err
@@ -33,12 +34,10 @@ func (a *SchedulerAdapter) Start() error {
 	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
 
-	done := make(chan bool)
-
 	go func() {
 		for {
 			select {
-			case <-done:
+			case <-ctx.Done():
 				log.Printf("Scheduler stopping")
 				return
 
@@ -51,10 +50,6 @@ func (a *SchedulerAdapter) Start() error {
 		}
 	}()
 
-	// TODO: Implement graceful shutdown (see main.go)
-	// When adding the context, change the done channel to stop the ticker as
-	// the context stops too
-	//
-	// done<- true
+	<-ctx.Done()
 	return nil
 }

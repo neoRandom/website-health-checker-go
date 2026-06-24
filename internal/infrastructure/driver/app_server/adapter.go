@@ -1,6 +1,7 @@
 package appserver
 
 import (
+	"context"
 	"encoding/json"
 	"http-server/internal/core/interface/driver"
 	models "http-server/internal/core/model"
@@ -9,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type MetricsCollector interface {
@@ -42,7 +44,7 @@ func NewAppServerAdapter(
 	}
 }
 
-func (s *AppServerAdapter) Start() error {
+func (s *AppServerAdapter) Start(ctx context.Context) error {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -67,7 +69,24 @@ func (s *AppServerAdapter) Start() error {
 	}
 
 	log.Printf("Server starting at http://localhost%v...", s.addr)
-	return srv.ListenAndServe()
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- srv.ListenAndServe()
+	}()
+
+	select {
+	case <-ctx.Done():
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		log.Printf("Server stopping at http://localhost%v...", s.addr)
+		if err := srv.Shutdown(shutdownCtx); err != nil {
+			return err
+		}
+		return <-errCh
+	case err := <-errCh:
+		return err
+	}
 }
 
 func (s *AppServerAdapter) handleGetSiteList(w http.ResponseWriter, r *http.Request) {
