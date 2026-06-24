@@ -15,7 +15,7 @@ func NewSiteListUseCases(siteRepository driven.SiteRepository) *SiteListUseCases
 	}
 }
 
-func (uc *SiteListUseCases) GetSiteList() ([]*model.Site, error) {
+func (uc *SiteListUseCases) GetSiteList() ([]model.Site, error) {
 	return uc.siteRepository.GetList()
 }
 

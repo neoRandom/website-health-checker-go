@@ -1,4 +1,4 @@
-package server
+package main
 
 import (
 	usecase "http-server/internal/application/use_case"
@@ -8,6 +8,7 @@ import (
 	appserver "http-server/internal/infrastructure/driver/app_server"
 	pprofserver "http-server/internal/infrastructure/driver/pprof_server"
 	prometheusmetricsexporter "http-server/internal/infrastructure/driver/prometheus_metrics_exporter"
+	"http-server/internal/infrastructure/driver/scheduler"
 	"log"
 
 	"database/sql"
@@ -44,8 +45,16 @@ func main() {
 
 	//
 	siteRepository := driven.NewSQLiteSiteRepositoryAdapter(db)
+	resultRepository := driven.NewSQLiteResultRepositoryAdapter(db)
+
 	metricsCollector := driven.NewPrometheusMetricsCollector(siteRepository)
-	siteListUseCase := usecase.NewSiteListUseCases(siteRepository)
+	httpRequester := driven.NewNetHttpRequesterAdapter()
+
+	siteListUseCases := usecase.NewSiteListUseCases(siteRepository)
+	siteCheckUseCases := usecase.NewSiteCheckUseCases(
+		httpRequester,
+		resultRepository,
+	)
 
 	pprofServer := pprofserver.NewPprofServerAdapter(":6060")
 	metricsExporter := prometheusmetricsexporter.NewPrometheusMetricsExporterAdapter(
@@ -54,15 +63,20 @@ func main() {
 	)
 	appServer := appserver.NewAppServerAdapter(
 		":8080",
-		siteListUseCase.GetSiteList,
-		siteListUseCase.AddSite,
-		siteListUseCase.UpdateSite,
-		siteListUseCase.RemoveSite,
+		siteListUseCases.GetSiteList,
+		siteListUseCases.AddSite,
+		siteListUseCases.UpdateSite,
+		siteListUseCases.RemoveSite,
 		metricsCollector,
+	)
+	scheduler := scheduler.NewSchedulerAdapter(
+		siteRepository,
+		siteCheckUseCases.CheckSites,
 	)
 
 	// TODO: Implement graceful shutdown. If not, storage may corrupt.
 	go pprofServer.Start()
 	go metricsExporter.Start()
 	go appServer.Start()
+	go scheduler.Start()
 }

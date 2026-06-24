@@ -15,21 +15,21 @@ func NewSQLiteSiteRepositoryAdapter(db *sql.DB) *SQLiteSiteRepositoryAdapter {
 	}
 }
 
-func (r *SQLiteSiteRepositoryAdapter) GetList() ([]*model.Site, error) {
+func (r *SQLiteSiteRepositoryAdapter) GetList() ([]model.Site, error) {
 	rows, err := r.db.Query(`SELECT id, url FROM sites`)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var list []*model.Site
+	var list []model.Site
 
 	for rows.Next() {
 		var site model.Site
 		if err := rows.Scan(&site.Id, &site.Url); err != nil {
 			return nil, err
 		}
-		list = append(list, &site)
+		list = append(list, site)
 	}
 
 	return list, nil
