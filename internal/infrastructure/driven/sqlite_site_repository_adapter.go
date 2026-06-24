@@ -16,7 +16,7 @@ func NewSQLiteSiteRepositoryAdapter(db *sql.DB) *SQLiteSiteRepositoryAdapter {
 }
 
 func (r *SQLiteSiteRepositoryAdapter) GetList() ([]model.Site, error) {
-	rows, err := r.db.Query(`SELECT id, url FROM sites`)
+	rows, err := r.db.Query(`SELECT site_id, url FROM sites`)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (r *SQLiteSiteRepositoryAdapter) Save(s *model.Site) (model.SiteID, error) 
 }
 
 func (r *SQLiteSiteRepositoryAdapter) Update(s *model.Site) error {
-	_, err := r.db.Exec(`UPDATE sites SET url = ? WHERE id = ?`, s.Url, s.Id)
+	_, err := r.db.Exec(`UPDATE sites SET url = ? WHERE site_id = ?`, s.Url, s.Id)
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func (r *SQLiteSiteRepositoryAdapter) Update(s *model.Site) error {
 }
 
 func (r *SQLiteSiteRepositoryAdapter) Remove(id model.SiteID) error {
-	_, err := r.db.Exec(`DELETE FROM sites WHERE id = ?`, id)
+	_, err := r.db.Exec(`DELETE FROM sites WHERE site_id = ?`, id)
 	if err != nil {
 		return err
 	}
