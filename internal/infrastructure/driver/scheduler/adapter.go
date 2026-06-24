@@ -2,6 +2,7 @@ package scheduler
 
 import (
 	"context"
+	"fmt"
 	"http-server/internal/core/interface/driven"
 	"http-server/internal/core/interface/driver"
 	"log"
@@ -26,7 +27,7 @@ func NewSchedulerAdapter(
 func (a *SchedulerAdapter) Start(ctx context.Context) error {
 	targets, err := a.siteRepository.GetList()
 	if err != nil {
-		return err
+		return fmt.Errorf("load scheduled targets: %w", err)
 	}
 
 	log.Printf("Scheduler starting with %d targets", len(targets))
@@ -42,9 +43,16 @@ func (a *SchedulerAdapter) Start(ctx context.Context) error {
 				return
 
 			case <-ticker.C:
+				updatedTargets, err := a.siteRepository.GetList()
+				if err != nil {
+					log.Printf("Scheduler could not refresh targets: %v", fmt.Errorf("refresh scheduled targets: %w", err))
+				} else {
+					targets = updatedTargets
+				}
+
 				log.Printf("Scheduler tick: checking %d targets", len(targets))
 				if err := a.checkSites(targets); err != nil {
-					log.Printf("Scheduler check failed: %s", err)
+					log.Printf("Scheduler check failed: %v", fmt.Errorf("check scheduled targets: %w", err))
 				}
 			}
 		}
