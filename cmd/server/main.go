@@ -24,10 +24,6 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-// TODO: Improve error handling.
-// Change "log.Fatal", which forcibly terminates the program, for a softer warning
-// Add error messages and runtime checks
-
 func main() {
 	if err := run(); err != nil {
 		log.Printf("application error: %v", err)
