@@ -32,6 +32,7 @@ go.work.sum
 
 # Misc
 tmp/
+.screenshots
 
 # Database
 *.db
