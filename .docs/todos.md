@@ -8,3 +8,19 @@ Error worker saving site 'https://github.com': database is locked (5) (SQLITE_BU
 
 - Test the before and after of the project
     - And improve performance if needed
+
+- Implement relisience features before public deploy
+    - Rate Limiter
+    - Request Size Limit
+    - Authentication for CRUD operations
+    - Request Caching
+    - Query and Request Timeouts
+    - Idempotency
+    - Query size limits / Pagination
+    - Input validation
+    - External persistent structured logging (to know what happened)
+    - Panic recovery (to avoid downtime)
+    - Retries (see SQLite concurrency issue)
+    - Security Headers
+    - Warnings/Alerts on high usage (e.g.: egress)
+    - Database Indexes (e.g.: results)
