@@ -96,9 +96,9 @@ func (s *AppServerAdapter) handleGetSiteList(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	body := make([]*dto.SiteJSON, len(sList))
+	body := make([]dto.SiteJSON, len(sList))
 	for i, site := range sList {
-		body[i] = &dto.SiteJSON{
+		body[i] = dto.SiteJSON{
 			Id:  site.Id,
 			Url: site.Url,
 		}

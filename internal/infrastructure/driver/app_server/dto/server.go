@@ -7,10 +7,10 @@ type AddSiteRequest struct {
 }
 
 type GetSiteListResponse struct {
-	Body []*SiteJSON `json:"body"`
+	Body []SiteJSON `json:"body"`
 }
 
 type SiteJSON struct {
 	Id  model.SiteID `json:"id"`
-	Url string        `json:"url"`
+	Url string       `json:"url"`
 }

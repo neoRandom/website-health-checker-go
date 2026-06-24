@@ -23,10 +23,6 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-// TODO: Change "[]*Struct" to "[]Struct" where it is applicable
-// A slice of structures has poorer performance because of multiple reasons
-// So it needs to be used only where pointers are absolutely necessary
-
 // TODO: Improve error handling.
 // Change "log.Fatal", which forcibly terminates the program, for a softer warning
 // Add error messages and runtime checks
