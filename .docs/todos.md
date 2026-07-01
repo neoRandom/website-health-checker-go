@@ -11,9 +11,9 @@ Error worker saving site 'https://github.com': database is locked (5) (SQLITE_BU
 
 - Implement relisience features before public deploy
     - Rate Limiter
-    - Request Size Limit
+    - Request Size Limit (downscaled; probably already handled by Fly.io)
     - Authentication for CRUD operations
-    - Request Caching
+    - Request Caching (downscaled; probably already handled by Fly.io)
     - Query and Request Timeouts
     - Idempotency
     - Query size limits / Pagination
