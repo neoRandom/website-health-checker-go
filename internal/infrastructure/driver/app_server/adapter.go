@@ -7,6 +7,7 @@ import (
 	models "http-server/internal/core/model"
 	"http-server/internal/infrastructure/driver/app_server/dto"
 	"http-server/internal/infrastructure/driver/app_server/middleware"
+	"http-server/internal/infrastructure/driver/app_server/template"
 	"log"
 	"net/http"
 	"strconv"
@@ -48,7 +49,8 @@ func (s *AppServerAdapter) Start(ctx context.Context) error {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello, world!"))
+		component := template.HomePage()
+		component.Render(ctx, w)
 	})
 
 	mux.HandleFunc("GET /sites/list", s.handleGetSiteList)
