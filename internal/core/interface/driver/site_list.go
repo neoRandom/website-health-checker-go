@@ -3,6 +3,6 @@ package driver
 import "http-server/internal/core/model"
 
 type GetSiteList func() ([]model.Site, error)
-type AddSite func(url string) (*model.Site, error)
-type UpdateSite func(id model.SiteID, url string) error
+type AddSite func(site *model.Site) (model.SiteID, error)
+type UpdateSite func(site *model.Site) error
 type RemoveSite func(id model.SiteID) error

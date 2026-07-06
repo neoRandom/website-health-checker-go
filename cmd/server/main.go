@@ -24,6 +24,9 @@ import (
 	_ "modernc.org/sqlite"
 )
 
+// TODO: Change "AppServerAdapter"'s "PUT" to "PATCH", as it is more fitting
+// for parcial updates
+
 func main() {
 	if err := run(); err != nil {
 		log.Printf("application error: %v", err)

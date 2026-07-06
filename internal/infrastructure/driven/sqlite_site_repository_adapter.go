@@ -16,7 +16,9 @@ func NewSQLiteSiteRepositoryAdapter(db *sql.DB) *SQLiteSiteRepositoryAdapter {
 }
 
 func (r *SQLiteSiteRepositoryAdapter) GetList() ([]model.Site, error) {
-	rows, err := r.db.Query(`SELECT site_id, url FROM sites`)
+	rows, err := r.db.Query(
+		`SELECT site_id, url, expected_status_code FROM sites`,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -26,7 +28,11 @@ func (r *SQLiteSiteRepositoryAdapter) GetList() ([]model.Site, error) {
 
 	for rows.Next() {
 		var site model.Site
-		if err := rows.Scan(&site.Id, &site.Url); err != nil {
+		if err := rows.Scan(
+			&site.Id,
+			&site.Url,
+			&site.ExpectedStatusCode,
+		); err != nil {
 			return nil, err
 		}
 		list = append(list, site)
@@ -36,7 +42,13 @@ func (r *SQLiteSiteRepositoryAdapter) GetList() ([]model.Site, error) {
 }
 
 func (r *SQLiteSiteRepositoryAdapter) Save(s *model.Site) (model.SiteID, error) {
-	results, err := r.db.Exec(`INSERT INTO sites (url) VALUES (?)`, s.Url)
+	results, err := r.db.Exec(
+		`
+			INSERT INTO sites (url, expected_status_code) 
+			VALUES (?, ?)
+		`,
+		s.Url, s.ExpectedStatusCode,
+	)
 	if err != nil {
 		return model.SiteID(0), err
 	}
@@ -45,8 +57,14 @@ func (r *SQLiteSiteRepositoryAdapter) Save(s *model.Site) (model.SiteID, error) 
 	return model.SiteID(id), err
 }
 
+// TODO: refactor the Update implementation
+// currently, the UPDATE updates every column except the primary key
+// change it to dynamically build the query, or skip it entirely
 func (r *SQLiteSiteRepositoryAdapter) Update(s *model.Site) error {
-	_, err := r.db.Exec(`UPDATE sites SET url = ? WHERE site_id = ?`, s.Url, s.Id)
+	_, err := r.db.Exec(
+		`UPDATE sites SET url = ?, expected_status_code = ? WHERE site_id = ?`,
+		s.Url, s.ExpectedStatusCode, s.Id,
+	)
 	if err != nil {
 		return err
 	}

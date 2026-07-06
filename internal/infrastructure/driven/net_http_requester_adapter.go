@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type NetHttpRequesterAdapter struct {}
+type NetHttpRequesterAdapter struct{}
 
 func NewNetHttpRequesterAdapter() *NetHttpRequesterAdapter {
 	return &NetHttpRequesterAdapter{}
@@ -29,17 +29,23 @@ func (hr *NetHttpRequesterAdapter) CheckSite(s *model.Site) (*model.Result, erro
 
 	checkedAt := time.Now()
 	resp, err := client.Do(req)
+	responseTime := time.Since(checkedAt)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
+	// TODO: Move this logic to the use case, and change the returned type
 	res := &model.Result{
-		Id: 0,
-		SiteId: s.Id,
+		Id:         0,
+		SiteId:     s.Id,
 		StatusCode: resp.StatusCode,
-		CheckedAt: checkedAt,
+		IsHealthy:  resp.StatusCode == s.ExpectedStatusCode,
+		// TODO: Implement; Verify if the website has a valid TSL certificate
+		IsSecure:     false,
+		ResponseTime: responseTime,
+		CheckedAt:    checkedAt,
 	}
-	
+
 	return res, nil
 }

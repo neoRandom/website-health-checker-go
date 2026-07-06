@@ -2,6 +2,9 @@ package dto
 
 import "http-server/internal/core/model"
 
+// TODO: change to.AddSiteRequest AND dto.SiteJSON to support ExpectedStatusCode
+// As of v-0.0.2, ExpectedStatusCode is optional
+
 type AddSiteRequest struct {
 	Url string `json:"url"`
 }
