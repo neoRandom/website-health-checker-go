@@ -24,3 +24,6 @@ Error worker saving site 'https://github.com': database is locked (5) (SQLITE_BU
     - Security Headers
     - Warnings/Alerts on high usage (e.g.: egress)
     - Database Indexes (e.g.: results)
+
+- Add context (ctx) to every part that I'll benefit from having it
+    - Database operations
