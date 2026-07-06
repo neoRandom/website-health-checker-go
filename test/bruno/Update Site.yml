@@ -4,14 +4,15 @@ info:
   seq: 3
 
 http:
-  method: PUT
+  method: PATCH
   url: http://localhost:8080/sites/list
   body:
     type: json
     data: |-
       {
         "id": 1,
-        "url": "https://youtube.com"
+        "url": "https://youtube.com",
+        "expected_status_code": 201
       }
   auth: inherit
 
