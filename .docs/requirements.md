@@ -1,7 +1,11 @@
+Deprecated
+
 ```
 API:
 
 - GET / (Dashboard with everything)
+    - Overview: Kind of check, Pooling, Timeout
+    - <To be added>
 
 - GET /sites
     - HTMX integration
