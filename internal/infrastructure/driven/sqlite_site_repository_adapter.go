@@ -2,7 +2,9 @@ package driven
 
 import (
 	"database/sql"
+	"fmt"
 	"http-server/internal/core/model"
+	"strings"
 )
 
 type SQLiteSiteRepositoryAdapter struct {
@@ -57,14 +59,42 @@ func (r *SQLiteSiteRepositoryAdapter) Save(s *model.Site) (model.SiteID, error) 
 	return model.SiteID(id), err
 }
 
-// TODO: refactor the Update implementation
-// currently, the UPDATE updates every column except the primary key
-// change it to dynamically build the query, or skip it entirely
 func (r *SQLiteSiteRepositoryAdapter) Update(s *model.Site) error {
-	_, err := r.db.Exec(
-		`UPDATE sites SET url = ?, expected_status_code = ? WHERE site_id = ?`,
-		s.Url, s.ExpectedStatusCode, s.Id,
+	var queryParts []string
+	var args []any
+	argCounter := 1
+
+	if s.Id == model.SiteID(0) {
+		return fmt.Errorf("Invalid site ID '%v'", s.Id)
+	}
+
+	if s.Url != "" {
+		queryParts = append(
+			queryParts, fmt.Sprintf("url = $%d", argCounter),
+		)
+		args = append(args, s.Url)
+		argCounter++
+	}
+	if s.ExpectedStatusCode != 0 {
+		queryParts = append(
+			queryParts, fmt.Sprintf("expected_status_code = $%d", argCounter),
+		)
+		args = append(args, s.ExpectedStatusCode)
+		argCounter++
+	}
+
+	if len(queryParts) == 0 {
+		return nil
+	}
+
+	args = append(args, s.Id)
+	finalQuery := fmt.Sprintf(
+		`UPDATE sites SET %s WHERE site_id = $%d`, 
+		strings.Join(queryParts, ", "),
+		argCounter,
 	)
+
+	_, err := r.db.Exec(finalQuery, args...)
 	if err != nil {
 		return err
 	}

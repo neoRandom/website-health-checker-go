@@ -55,7 +55,7 @@ func (s *AppServerAdapter) Start(ctx context.Context) error {
 
 	mux.HandleFunc("GET /sites/list", s.handleGetSiteList)
 	mux.HandleFunc("POST /sites/list", s.handleAddSite)
-	mux.HandleFunc("PUT /sites/list", s.handleUpdateSite)
+	mux.HandleFunc("PATCH /sites/list", s.handleUpdateSite)
 	mux.HandleFunc("DELETE /sites/list/{id}", s.handleRemoveSite)
 
 	wMux := middleware.ChainMiddleware(
