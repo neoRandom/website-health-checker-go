@@ -125,7 +125,7 @@ func (s *AppServerAdapter) handleAddSite(
 
 	site := &model.Site{
 		Url:                req.Url,
-		ExpectedStatusCode: 0,
+		ExpectedStatusCode: req.ExpectedStatusCode,
 	}
 
 	id, err := s.addSite(site)
@@ -138,6 +138,7 @@ func (s *AppServerAdapter) handleAddSite(
 	json.NewEncoder(w).Encode(dto.SiteJSON{
 		Id:  id,
 		Url: site.Url,
+		ExpectedStatusCode: site.ExpectedStatusCode,
 	})
 }
 
@@ -153,7 +154,7 @@ func (s *AppServerAdapter) handleUpdateSite(
 	site := &model.Site{
 		Id:                 req.Id,
 		Url:                req.Url,
-		ExpectedStatusCode: 0,
+		ExpectedStatusCode: req.ExpectedStatusCode,
 	}
 
 	err := s.updateSite(site)
