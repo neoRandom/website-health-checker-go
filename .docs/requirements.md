@@ -1,16 +1,17 @@
-Deprecated
-
 ```
 API:
 
 - GET / (Dashboard with everything)
+    - Header Status: Total sites, current OK, current DOWN (4xx or 5xx), current WATCH (StatusCode != ExpectedStatusCode)
     - Overview: Kind of check, Pooling, Timeout
-    - <To be added>
+    - Incident Log: host, method, endpoint, time, status code
+    - Site list: host, description, status, last response time MS, last check, is secure, expected status code
+    - Site status: 
+        - site information: host, endpoint, description, expected status code
+        - last 100 results
+        - a horizontal list of vertical bars, with the height of the bars representing the response time, and the color representing the OK(green), DOWN (red), or WATCH (yellow).
 
-- GET /sites
-    - HTMX integration
-- GET /sites/check?url=<target url>
-    - HTMX integration
+- GET /sites (CRUD for "/sites/list")
 
 - GET /sites/list (Current targets)
 - POST /sites/list (Add new target)
