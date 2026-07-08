@@ -3,8 +3,8 @@ API:
 
 - GET / (Dashboard with everything)
     - Header Status: Total sites, current OK, current DOWN (4xx or 5xx), current WATCH (StatusCode != ExpectedStatusCode)
-    - Overview: Kind of check, Pooling, Timeout
-    - Incident Log: host, method, endpoint, time, status code
+    - Overview: Method, Pooling, Timeout
+    - Incident Log: host, method, endpoint, response time MS, checked at, status code
     - Site list: host, description, status, last response time MS, last check, is secure, expected status code
     - Site status: 
         - site information: host, endpoint, description, expected status code

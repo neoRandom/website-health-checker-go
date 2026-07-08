@@ -56,38 +56,6 @@ Open http://localhost:8080 on your browser.
 
 TODO...
 
-## Features / Roadmap
-
-- [x] Health-check multiple websites
-
-- [ ] Real-time dashboard
-
-- [x] User-modifiable list of URLs
-
-#### Technical details:
-
-- [ ] Apply quality principles
-    - [ ] Dependency Inversion
-    - [ ] Single Responsibility
-    - [ ] Separate business logic from external dependencies
-
-- [x] Add diagnosing methods
-    - [x] Monitoring via Prometheus/Grafana
-    - [x] Profiling via `net/http/pprof`
-
-- [x] Add ADRs and Code Documentation
-
-#### Challenges:
-
-- [ ] Correct usage of concurrency for probing
-
-- [ ] Avoid data leaking and hanging calls
-
-- [ ] Minimal footprint (memory and network)
-
-- [ ] Resilience against edge cases
-    - [ ] Network going down
-    - [ ] Anti-bot systems
 
 ## Tests
 
