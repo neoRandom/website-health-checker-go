@@ -9,7 +9,8 @@ func Migrate(db *sql.DB) error {
 		CREATE TABLE IF NOT EXISTS sites (
 			site_id INTEGER PRIMARY KEY AUTOINCREMENT,
 			url TEXT NOT NULL UNIQUE,
-			expected_status_code INTEGER NOT NULL DEFAULT 200
+			expected_status_code INTEGER NOT NULL DEFAULT 200,
+			description TEXT DEFAULT ''
 		);
 
 		CREATE TABLE IF NOT EXISTS results (

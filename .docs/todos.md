@@ -1,9 +1,8 @@
 ## Business Rules
 
-- [ ] Update models
-    - [ ] Site
-        - [ ] Split "Url" into "Host" and "Endpoint"
-        - [ ] Add "Description"
+- [x] Update models
+    - [x] Site
+        - [x] Add "Description"
 
 - [ ] Add setting information: Check Method, Pooling/Interval, Timeout
 

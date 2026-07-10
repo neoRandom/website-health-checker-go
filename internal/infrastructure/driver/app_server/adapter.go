@@ -103,8 +103,9 @@ func (s *AppServerAdapter) handleGetSiteList(
 	body := make([]dto.SiteJSON, len(sList))
 	for i, site := range sList {
 		body[i] = dto.SiteJSON{
-			Id:  site.Id,
-			Url: site.Url,
+			Id:          site.Id,
+			Url:         site.Url,
+			Description: site.Description,
 		}
 	}
 
@@ -126,6 +127,7 @@ func (s *AppServerAdapter) handleAddSite(
 	site := &model.Site{
 		Url:                req.Url,
 		ExpectedStatusCode: req.ExpectedStatusCode,
+		Description:        req.Description,
 	}
 
 	id, err := s.addSite(site)
@@ -136,9 +138,10 @@ func (s *AppServerAdapter) handleAddSite(
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(dto.SiteJSON{
-		Id:  id,
-		Url: site.Url,
+		Id:                 id,
+		Url:                site.Url,
 		ExpectedStatusCode: site.ExpectedStatusCode,
+		Description:        site.Description,
 	})
 }
 
@@ -155,6 +158,7 @@ func (s *AppServerAdapter) handleUpdateSite(
 		Id:                 req.Id,
 		Url:                req.Url,
 		ExpectedStatusCode: req.ExpectedStatusCode,
+		Description:        req.Description,
 	}
 
 	err := s.updateSite(site)

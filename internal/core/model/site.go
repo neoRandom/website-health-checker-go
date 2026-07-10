@@ -6,4 +6,5 @@ type Site struct {
 	Id                 SiteID
 	Url                string
 	ExpectedStatusCode int
+	Description        string
 }

@@ -19,7 +19,7 @@ func NewSQLiteSiteRepositoryAdapter(db *sql.DB) *SQLiteSiteRepositoryAdapter {
 
 func (r *SQLiteSiteRepositoryAdapter) GetList() ([]model.Site, error) {
 	rows, err := r.db.Query(
-		`SELECT site_id, url, expected_status_code FROM sites`,
+		`SELECT site_id, url, expected_status_code, description FROM sites`,
 	)
 	if err != nil {
 		return nil, err
@@ -34,6 +34,7 @@ func (r *SQLiteSiteRepositoryAdapter) GetList() ([]model.Site, error) {
 			&site.Id,
 			&site.Url,
 			&site.ExpectedStatusCode,
+			&site.Description,
 		); err != nil {
 			return nil, err
 		}
@@ -46,10 +47,10 @@ func (r *SQLiteSiteRepositoryAdapter) GetList() ([]model.Site, error) {
 func (r *SQLiteSiteRepositoryAdapter) Save(s *model.Site) (model.SiteID, error) {
 	results, err := r.db.Exec(
 		`
-			INSERT INTO sites (url, expected_status_code) 
-			VALUES (?, ?)
+			INSERT INTO sites (url, expected_status_code, description) 
+			VALUES (?, ?, ?)
 		`,
-		s.Url, s.ExpectedStatusCode,
+		s.Url, s.ExpectedStatusCode, s.Description,
 	)
 	if err != nil {
 		return model.SiteID(0), err
@@ -80,6 +81,13 @@ func (r *SQLiteSiteRepositoryAdapter) Update(s *model.Site) error {
 			queryParts, fmt.Sprintf("expected_status_code = $%d", argCounter),
 		)
 		args = append(args, s.ExpectedStatusCode)
+		argCounter++
+	}
+	if s.Description != "" {
+		queryParts = append(
+			queryParts, fmt.Sprintf("description = $%d", argCounter),
+		)
+		args = append(args, s.Description)
 		argCounter++
 	}
 
