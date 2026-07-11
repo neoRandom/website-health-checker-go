@@ -8,8 +8,9 @@
 
 ## Code Quality
 
-- [ ] Improve error handling.
+- [ ] Improve response handling.
     - [ ] Add error messages and runtime checks
+    - [ ] Set Headers in every endpoint
 
 - [ ] Add context (ctx) to every part that I'll benefit from having it
     - [ ] Database operations
