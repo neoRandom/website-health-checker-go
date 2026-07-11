@@ -1,11 +1,11 @@
 info:
   name: Update Site
   type: http
-  seq: 3
+  seq: 1
 
 http:
   method: PATCH
-  url: http://localhost:8080/sites/list
+  url: http://localhost:8080/api/v1/site
   body:
     type: json
     data: |-
@@ -15,6 +15,12 @@ http:
         "expected_status_code": 201
       }
   auth: inherit
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
 
 settings:
   encodeUrl: true

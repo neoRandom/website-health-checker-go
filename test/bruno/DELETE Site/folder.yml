@@ -1,0 +1,7 @@
+info:
+  name: DELETE Site
+  type: folder
+  seq: 4
+
+request:
+  auth: inherit
