@@ -4,7 +4,7 @@
     - [x] Site
         - [x] Add "Description"
 
-- [ ] Add setting information: Check Method, Pooling/Interval, Timeout
+- [x] Add config fields: Pooling/Interval, Timeout
 
 ## Code Quality
 

@@ -10,15 +10,18 @@ import (
 )
 
 type SchedulerAdapter struct {
+	interval       time.Duration
 	siteRepository driven.SiteRepository
 	checkSites     driver.CheckSites
 }
 
 func NewSchedulerAdapter(
+	interval time.Duration,
 	siteRepository driven.SiteRepository,
 	checkSites driver.CheckSites,
 ) *SchedulerAdapter {
 	return &SchedulerAdapter{
+		interval: interval,
 		siteRepository: siteRepository,
 		checkSites:     checkSites,
 	}
@@ -32,7 +35,7 @@ func (a *SchedulerAdapter) Start(ctx context.Context) error {
 
 	log.Printf("Scheduler starting with %d targets", len(targets))
 
-	ticker := time.NewTicker(30 * time.Second)
+	ticker := time.NewTicker(a.interval)
 	defer ticker.Stop()
 
 	go func() {

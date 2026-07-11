@@ -13,6 +13,7 @@ import (
 	prometheusmetricsexporter "http-server/internal/infrastructure/driver/prometheus_metrics_exporter"
 	"http-server/internal/infrastructure/driver/scheduler"
 	"log"
+	"time"
 
 	"database/sql"
 	"net/http"
@@ -66,7 +67,9 @@ func run() error {
 	resultRepository := driven.NewSQLiteResultRepositoryAdapter(db)
 
 	metricsCollector := driven.NewPrometheusMetricsCollector(siteRepository)
-	httpRequester := driven.NewNetHttpRequesterAdapter()
+	httpRequester := driven.NewNetHttpRequesterAdapter(
+		time.Duration(cfg.CheckTimeout) * time.Second,
+	)
 
 	siteListUseCases := usecase.NewSiteListUseCases(siteRepository)
 	siteCheckUseCases := usecase.NewSiteCheckUseCases(
@@ -88,6 +91,7 @@ func run() error {
 		metricsCollector,
 	)
 	scheduler := scheduler.NewSchedulerAdapter(
+		time.Duration(cfg.CheckInterval) * time.Second,
 		siteRepository,
 		siteCheckUseCases.CheckSites,
 	)

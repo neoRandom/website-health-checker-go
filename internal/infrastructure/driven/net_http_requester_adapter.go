@@ -7,10 +7,14 @@ import (
 	"time"
 )
 
-type NetHttpRequesterAdapter struct{}
+type NetHttpRequesterAdapter struct{
+	timeout time.Duration
+}
 
-func NewNetHttpRequesterAdapter() *NetHttpRequesterAdapter {
-	return &NetHttpRequesterAdapter{}
+func NewNetHttpRequesterAdapter(timeout time.Duration) *NetHttpRequesterAdapter {
+	return &NetHttpRequesterAdapter{
+		timeout: timeout,
+	}
 }
 
 func (hr *NetHttpRequesterAdapter) CheckSite(s *model.Site) (*model.Result, error) {
@@ -24,7 +28,7 @@ func (hr *NetHttpRequesterAdapter) CheckSite(s *model.Site) (*model.Result, erro
 	}
 
 	client := &http.Client{
-		Timeout: 10 * time.Second,
+		Timeout: hr.timeout,
 	}
 
 	checkedAt := time.Now()
