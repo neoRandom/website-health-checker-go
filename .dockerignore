@@ -1,5 +1,7 @@
+.docs/
+.scripts/
+.vscode/
 data/
-docs/
 test/
 tmp/
 vendor/
