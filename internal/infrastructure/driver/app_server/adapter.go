@@ -56,10 +56,10 @@ func (s *AppServerAdapter) Start(ctx context.Context) error {
 	mux.HandleFunc("GET /", s.handleHome)
 	mux.HandleFunc("GET /sites/{id}", s.handleSiteDetails)
 
-	mux.HandleFunc("GET /sites/list", s.handleGetSiteList)
-	mux.HandleFunc("POST /sites/list", s.handleAddSite)
-	mux.HandleFunc("PATCH /sites/list", s.handleUpdateSite)
-	mux.HandleFunc("DELETE /sites/list/{id}", s.handleRemoveSite)
+	mux.HandleFunc("GET /api/v1/site", s.handleGetSiteList)
+	mux.HandleFunc("POST /api/v1/site", s.handleAddSite)
+	mux.HandleFunc("PATCH /api/v1/site", s.handleUpdateSite)
+	mux.HandleFunc("DELETE /api/v1/site/{id}", s.handleRemoveSite)
 
 	wMux := middleware.ChainMiddleware(
 		mux,
