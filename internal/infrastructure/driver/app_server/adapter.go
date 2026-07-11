@@ -2,15 +2,11 @@ package appserver
 
 import (
 	"context"
-	"encoding/json"
 	"http-server/internal/core/interface/driver"
-	"http-server/internal/core/model"
-	"http-server/internal/infrastructure/driver/app_server/dto"
+	"http-server/internal/infrastructure/config"
 	"http-server/internal/infrastructure/driver/app_server/middleware"
-	"http-server/internal/infrastructure/template"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -24,7 +20,10 @@ type AppServerAdapter struct {
 	addSite          driver.AddSite
 	updateSite       driver.UpdateSite
 	removeSite       driver.RemoveSite
+	getSiteStatuses  driver.GetSiteStatuses
+	getSiteDetail    driver.GetSiteDetail
 	metricsCollector MetricsCollector
+	cfg              *config.Config
 }
 
 func NewAppServerAdapter(
@@ -33,7 +32,10 @@ func NewAppServerAdapter(
 	addSite driver.AddSite,
 	updateSite driver.UpdateSite,
 	removeSite driver.RemoveSite,
+	getSiteStatuses driver.GetSiteStatuses,
+	getSiteDetail driver.GetSiteDetail,
 	metricsCollector MetricsCollector,
+	cfg *config.Config,
 ) *AppServerAdapter {
 	return &AppServerAdapter{
 		addr:             addr,
@@ -41,17 +43,18 @@ func NewAppServerAdapter(
 		addSite:          addSite,
 		updateSite:       updateSite,
 		removeSite:       removeSite,
+		getSiteStatuses:  getSiteStatuses,
+		getSiteDetail:    getSiteDetail,
 		metricsCollector: metricsCollector,
+		cfg: cfg,
 	}
 }
 
 func (s *AppServerAdapter) Start(ctx context.Context) error {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		component := template.HomePage()
-		component.Render(ctx, w)
-	})
+	mux.HandleFunc("GET /", s.handleHome)
+	mux.HandleFunc("GET /sites/{id}", s.handleSiteDetails)
 
 	mux.HandleFunc("GET /sites/list", s.handleGetSiteList)
 	mux.HandleFunc("POST /sites/list", s.handleAddSite)
@@ -89,103 +92,4 @@ func (s *AppServerAdapter) Start(ctx context.Context) error {
 	case err := <-errCh:
 		return err
 	}
-}
-
-func (s *AppServerAdapter) handleGetSiteList(
-	w http.ResponseWriter, r *http.Request,
-) {
-	sList, err := s.getSiteList()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	body := make([]dto.SiteJSON, len(sList))
-	for i, site := range sList {
-		body[i] = dto.SiteJSON{
-			Id:          site.Id,
-			Url:         site.Url,
-			Description: site.Description,
-		}
-	}
-
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(dto.GetSiteListResponse{
-		Body: body,
-	})
-}
-
-func (s *AppServerAdapter) handleAddSite(
-	w http.ResponseWriter, r *http.Request,
-) {
-	var req dto.AddSiteRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	site := &model.Site{
-		Url:                req.Url,
-		ExpectedStatusCode: req.ExpectedStatusCode,
-		Description:        req.Description,
-	}
-
-	id, err := s.addSite(site)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(dto.SiteJSON{
-		Id:                 id,
-		Url:                site.Url,
-		ExpectedStatusCode: site.ExpectedStatusCode,
-		Description:        site.Description,
-	})
-}
-
-func (s *AppServerAdapter) handleUpdateSite(
-	w http.ResponseWriter, r *http.Request,
-) {
-	var req dto.SiteJSON
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	site := &model.Site{
-		Id:                 req.Id,
-		Url:                req.Url,
-		ExpectedStatusCode: req.ExpectedStatusCode,
-		Description:        req.Description,
-	}
-
-	err := s.updateSite(site)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"message": "success"}`))
-}
-
-func (s *AppServerAdapter) handleRemoveSite(
-	w http.ResponseWriter, r *http.Request,
-) {
-	idString := r.PathValue("id")
-
-	id, err := strconv.ParseInt(idString, 10, 64)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	err = s.removeSite(model.SiteID(id))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-
-	w.WriteHeader(http.StatusNoContent)
 }

@@ -2,5 +2,10 @@ package driver
 
 import "http-server/internal/core/model"
 
-type GetLatestResults func() ([]model.Result, error)
-type GetSiteLatestResults func(url string) (model.Result, error)
+type SiteStatus struct {
+	Site   model.Site
+	Latest *model.Result // nil if no check has run yet
+}
+
+type GetSiteStatuses func() ([]SiteStatus, error)
+type GetSiteDetail func(id model.SiteID, historyLimit int) (*SiteStatus, []model.Result, error)

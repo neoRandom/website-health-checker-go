@@ -76,6 +76,10 @@ func run() error {
 		httpRequester,
 		resultRepository,
 	)
+	dashboardUseCases := usecase.NewDashboardUseCases(
+		siteRepository, 
+		resultRepository,
+	)
 
 	pprofServer := pprofserver.NewPprofServerAdapter(":6060")
 	metricsExporter := prometheusmetricsexporter.NewPrometheusMetricsExporterAdapter(
@@ -88,7 +92,10 @@ func run() error {
 		siteListUseCases.AddSite,
 		siteListUseCases.UpdateSite,
 		siteListUseCases.RemoveSite,
+		dashboardUseCases.GetSiteStatuses,
+		dashboardUseCases.GetSiteDetail,
 		metricsCollector,
+		&cfg,
 	)
 	scheduler := scheduler.NewSchedulerAdapter(
 		time.Duration(cfg.CheckInterval) * time.Second,

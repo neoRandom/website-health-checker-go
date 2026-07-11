@@ -1,0 +1,195 @@
+package web
+
+templ Page() {
+	<html>
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<meta name="description" content="Monitor a list of websites with HTTP uptime, latency, and incident history."/>
+			<title>Website Health-Checker</title>
+			<link rel="preconnect" href="https://fonts.googleapis.com"/>
+			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+			<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+			<script src="https://cdn.tailwindcss.com"></script>
+			<script src="https://unpkg.com/htmx.org@1.9.12"></script>
+			<script>
+				tailwind.config = {
+					theme: {
+						extend: {
+							fontFamily: {
+								sans: ['Manrope', 'ui-sans-serif', 'system-ui'],
+								mono: ['IBM Plex Mono', 'ui-monospace', 'monospace'],
+							},
+						},
+					},
+				}
+			</script>
+		</head>
+		<body class="font-sans bg-neutral-950 text-neutral-100 antialiased">
+			{ children... }
+		</body>
+	</html>
+}
+
+// statBadge is the single home for the four header counters. No other
+// widget repeats these numbers.
+templ statBadge(label string, value int, dotClass string) {
+	<div class="flex items-center gap-2 border border-neutral-800 bg-neutral-900/40 px-3 py-2">
+		if dotClass != "" {
+			<span class={ "h-1.5 w-1.5 rounded-full", dotClass }></span>
+		}
+		<span class="text-xs uppercase tracking-[0.18em] text-neutral-500">{ label }</span>
+		<span class="ml-auto font-mono text-sm text-neutral-100">{ toStr(value) }</span>
+	</div>
+}
+
+templ HomePage(data DashboardData) {
+	@Page() {
+		<main class="min-h-screen bg-neutral-950 text-neutral-100">
+			<div class="mx-auto flex min-h-screen max-w-[1600px] flex-col gap-4 px-4 py-4 lg:px-6 lg:py-6">
+
+				<!-- Header: exactly the four counters the spec asks for, nothing else -->
+				<header class="flex flex-wrap items-center justify-between gap-3 border border-neutral-800 bg-neutral-950/90 px-4 py-3">
+					<div class="flex items-center gap-3">
+						<span class="text-sm font-semibold tracking-tight">Health-Checker</span>
+						<span class="font-mono text-xs text-neutral-600">last check { data.LastCheckAgo } ago</span>
+					</div>
+					<div class="flex flex-wrap gap-2">
+						@statBadge("Sites", data.TotalSites, "")
+						@statBadge("OK", data.OKCount, "bg-emerald-400")
+						@statBadge("Down", data.DownCount, "bg-red-400")
+						@statBadge("Watch", data.WatchCount, "bg-amber-400")
+					</div>
+				</header>
+
+				<div class="grid flex-1 gap-4 xl:grid-cols-[200px_minmax(0,1.6fr)_minmax(320px,1fr)]">
+
+					<!-- Overview: Method / Polling / Timeout, stated once -->
+					<aside class="grid content-start gap-4">
+						<div class="border border-neutral-800 bg-neutral-950/70 p-4">
+							<p class="text-xs uppercase tracking-[0.2em] text-neutral-500">Overview</p>
+							<div class="mt-4 space-y-3 font-mono text-sm text-neutral-300">
+								<div class="flex items-center justify-between"><span class="font-sans text-neutral-500">Method</span><span>{ data.Method }</span></div>
+								<div class="flex items-center justify-between"><span class="font-sans text-neutral-500">Polling</span><span>{ toStr(data.PollingIntervalSeconds) }s</span></div>
+								<div class="flex items-center justify-between"><span class="font-sans text-neutral-500">Timeout</span><span>{ toStr(data.TimeoutSeconds) }s</span></div>
+							</div>
+						</div>
+					</aside>
+
+					<!-- Site list: host, description, status, last response ms, last check, secure, expected code -->
+					<section class="overflow-hidden border border-neutral-800 bg-neutral-950/50">
+						<div class="grid grid-cols-[minmax(0,2fr)_minmax(0,0.7fr)_minmax(0,0.7fr)_minmax(0,0.6fr)_minmax(0,0.5fr)_minmax(0,0.7fr)] gap-3 border-b border-neutral-800 px-4 py-2 text-xs uppercase tracking-[0.16em] text-neutral-500">
+							<span>Site</span>
+							<span>Status</span>
+							<span>Response</span>
+							<span>Last check</span>
+							<span>Secure</span>
+							<span>Expected</span>
+						</div>
+						<div id="site-list" class="max-h-[70vh] divide-y divide-neutral-800 overflow-y-auto">
+							for _, site := range data.Sites {
+								<div
+									class="grid cursor-pointer grid-cols-[minmax(0,2fr)_minmax(0,0.7fr)_minmax(0,0.7fr)_minmax(0,0.6fr)_minmax(0,0.5fr)_minmax(0,0.7fr)] items-center gap-3 px-4 py-3 text-sm text-neutral-300 hover:bg-neutral-900/60"
+									hx-get={ "/sites/" + site.ID }
+									hx-target="#site-detail"
+									hx-swap="innerHTML"
+								>
+									<div class="min-w-0">
+										<div class="truncate font-mono text-neutral-100">{ site.Host }</div>
+										<div class="mt-0.5 truncate text-xs text-neutral-500">{ site.Description }</div>
+									</div>
+									<span class={ "flex items-center gap-2 font-mono text-xs", site.State.TextClass() }>
+										<span class={ "h-1.5 w-1.5 rounded-full", site.State.DotClass() }></span>
+										{ string(site.State) }
+									</span>
+									if site.LastResponseTimeMS >= 0 {
+										<span class="font-mono text-neutral-400">{ toStr(int(site.LastResponseTimeMS)) }ms</span>
+									} else {
+										<span class="font-mono text-neutral-600">—</span>
+									}
+									<span class="font-mono text-neutral-500">{ site.LastCheckedAgo }</span>
+									<span class={ "font-mono text-xs", site.Secure.TextClass() }>{ site.Secure.Label() }</span>
+									<span class="font-mono text-neutral-500">{ toStr(site.ExpectedStatusCode) }</span>
+								</div>
+							}
+						</div>
+					</section>
+
+					<!-- Incident log: host, method, endpoint, response ms, checked at, status code -->
+					<aside class="grid gap-4 content-start">
+						<div class="border border-neutral-800 bg-neutral-900/30 p-4">
+							<p class="text-xs uppercase tracking-[0.2em] text-neutral-500">Incident log</p>
+							<div class="mt-3 max-h-[60vh] space-y-0 divide-y divide-neutral-800 overflow-y-auto">
+								if len(data.Incidents) == 0 {
+									<p class="py-4 text-sm text-neutral-600">No incidents in the current window.</p>
+								}
+								for _, inc := range data.Incidents {
+									<div class="grid grid-cols-[minmax(0,1fr)_auto] gap-3 py-3 text-sm">
+										<div class="min-w-0">
+											<div class="truncate font-mono text-neutral-200">{ inc.Host }</div>
+											<div class="mt-0.5 truncate text-xs text-neutral-500">
+												{ data.Method }&#160;{ inc.Endpoint }&#160;·&#160;{ toStr(int(inc.ResponseTimeMS)) }ms&#160;·&#160;{ toStr(inc.StatusCode) }
+											</div>
+										</div>
+										<span class="whitespace-nowrap font-mono text-xs text-neutral-500">{ inc.CheckedAgo } ago</span>
+									</div>
+								}
+							</div>
+						</div>
+					</aside>
+				</div>
+
+				<!-- Site status: rendered by SiteDetailPanel, swapped in via HTMX -->
+				<section id="site-detail" class="border border-neutral-800 bg-neutral-950/50 p-6">
+					if data.Selected != nil {
+						@SiteDetailPanel(*data.Selected)
+					} else {
+						<p class="text-sm text-neutral-600">Select a site from the list to view its status, expected response, and recent history.</p>
+					}
+				</section>
+			</div>
+		</main>
+	}
+}
+
+// SiteDetailPanel is also the literal HTTP response body for GET /sites/{id},
+// so HTMX can swap it into #site-detail without a full page reload.
+templ SiteDetailPanel(d SiteDetail) {
+	<div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto]">
+		<div>
+			<div class="flex items-center gap-3">
+				<p class="font-mono text-base text-neutral-100">{ d.Host }</p>
+				<span class={ "font-mono text-xs", d.CurrentState.TextClass() }>{ string(d.CurrentState) }</span>
+			</div>
+			<p class="mt-1 font-mono text-xs text-neutral-500">{ d.Endpoint }</p>
+			<p class="mt-2 text-sm text-neutral-400">{ d.Description }</p>
+		</div>
+		<div class="flex gap-6 font-mono text-sm">
+			<div>
+				<p class="text-xs uppercase tracking-[0.16em] text-neutral-500">Expected</p>
+				<p class="mt-1 text-neutral-200">{ toStr(d.ExpectedStatusCode) }</p>
+			</div>
+			<div>
+				<p class="text-xs uppercase tracking-[0.16em] text-neutral-500">Certificate</p>
+				<p class={ "mt-1", d.CurrentSecure.TextClass() }>{ d.CurrentSecure.Label() }</p>
+			</div>
+		</div>
+	</div>
+
+	<div class="mt-6">
+		<p class="text-xs uppercase tracking-[0.16em] text-neutral-500">Last { toStr(len(d.Results)) } results</p>
+		if len(d.Results) == 0 {
+			<p class="mt-3 text-sm text-neutral-600">No results recorded yet.</p>
+		} else {
+			<div class="mt-3 flex h-24 items-end gap-[2px]">
+				for _, r := range d.Results {
+					<div
+						class={ "flex-1 min-w-[2px] rounded-t-[1px]", r.State.BarClass() }
+						style={ "height:" + toStr(int(r.BarHeightPct)) + "%" }
+						title={ toStr(int(r.ResponseTimeMS)) + "ms · " + toStr(r.StatusCode) + " · " + r.CheckedAgo + " ago" }
+					></div>
+				}
+			</div>
+		}
+	</div>
+}

@@ -30,6 +30,7 @@ func (r *SQLiteSiteRepositoryAdapter) GetList() ([]model.Site, error) {
 
 	for rows.Next() {
 		var site model.Site
+		
 		if err := rows.Scan(
 			&site.Id,
 			&site.Url,
@@ -38,10 +39,28 @@ func (r *SQLiteSiteRepositoryAdapter) GetList() ([]model.Site, error) {
 		); err != nil {
 			return nil, err
 		}
+		
 		list = append(list, site)
 	}
 
 	return list, nil
+}
+
+func (r *SQLiteSiteRepositoryAdapter) GetByID(id model.SiteID) (*model.Site, error) {
+	var s model.Site
+	
+	err := r.db.QueryRow(
+		`SELECT site_id, url, expected_status_code, description FROM sites WHERE site_id = ?`,
+		id,
+	).Scan(&s.Id, &s.Url, &s.ExpectedStatusCode, &s.Description)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	
+	return &s, nil
 }
 
 func (r *SQLiteSiteRepositoryAdapter) Save(s *model.Site) (model.SiteID, error) {
