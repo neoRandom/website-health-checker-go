@@ -7,7 +7,7 @@ import (
 	"http-server/internal/core/model"
 	"http-server/internal/infrastructure/driver/app_server/dto"
 	"http-server/internal/infrastructure/driver/app_server/middleware"
-	"http-server/internal/infrastructure/driver/app_server/template"
+	"http-server/internal/infrastructure/template"
 	"log"
 	"net/http"
 	"strconv"
