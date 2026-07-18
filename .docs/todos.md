@@ -65,20 +65,3 @@
 
 - [ ] Add ADRs and Code Documentation
 
-#### Challenges:
-
-- [ ] Correct usage of concurrency for probing
-
-- [ ] Avoid data leaking and hanging calls
-
-- [ ] Minimal footprint (memory and network)
-
-- [ ] Resilience against edge cases
-    - [ ] Network going down
-    - [ ] Anti-bot systems
-
-- [ ] Apply quality principles
-    - [ ] Dependency Inversion
-    - [ ] Single Responsibility
-    - [ ] Separate business logic from external dependencies
-
