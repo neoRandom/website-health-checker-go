@@ -33,7 +33,9 @@ func main() {
 }
 
 func run() error {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(
+		context.Background(), os.Interrupt, syscall.SIGTERM,
+	)
 	defer stop()
 
 	cfg, err := config.Load()
@@ -41,10 +43,14 @@ func run() error {
 		return fmt.Errorf("load config: %w", err)
 	}
 
-	//
+	// ====
+
 	db, err := sql.Open(cfg.DatabaseType, cfg.DatabasePath)
 	if err != nil {
-		return fmt.Errorf("open database %q at %q: %w", cfg.DatabaseType, cfg.DatabasePath, err)
+		return fmt.Errorf(
+			"open database %q at %q: %w",
+			cfg.DatabaseType, cfg.DatabasePath, err,
+		)
 	}
 	defer func() {
 		if closeErr := db.Close(); closeErr != nil {
@@ -56,17 +62,19 @@ func run() error {
 		return fmt.Errorf("ping database at %q: %w", cfg.DatabasePath, err)
 	}
 
-	//
 	err = database.Migrate(db)
 	if err != nil {
 		return fmt.Errorf("migrate database schema: %w", err)
 	}
 
-	//
+	// ====
+
 	siteRepository := driven.NewSQLiteSiteRepositoryAdapter(db)
 	resultRepository := driven.NewSQLiteResultRepositoryAdapter(db)
 
-	metricsCollector := driven.NewPrometheusMetricsCollector(ctx, siteRepository)
+	metricsCollector := driven.NewPrometheusMetricsCollector(
+		ctx, siteRepository,
+	)
 	httpRequester := driven.NewNetHttpRequesterAdapter(
 		time.Duration(cfg.CheckTimeout) * time.Second,
 	)
@@ -77,7 +85,7 @@ func run() error {
 		resultRepository,
 	)
 	dashboardUseCases := usecase.NewDashboardUseCases(
-		siteRepository, 
+		siteRepository,
 		resultRepository,
 	)
 
@@ -98,19 +106,22 @@ func run() error {
 		&cfg,
 	)
 	scheduler := scheduler.NewSchedulerAdapter(
-		time.Duration(cfg.CheckInterval) * time.Second,
+		time.Duration(cfg.CheckInterval)*time.Second,
 		siteRepository,
 		siteCheckUseCases.CheckSites,
 	)
 
-	//
+	// ====
 
 	var wg sync.WaitGroup
 	errCh := make(chan error, 4)
-	startService := func(name string, start func() error) {
+	startService := func(name string, start func(ctx context.Context) error) {
 		wg.Go(func() {
-			if err := start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-				wrappedErr := fmt.Errorf("%s failed to start or stopped unexpectedly: %w", name, err)
+			if err := start(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
+				wrappedErr := fmt.Errorf(
+					"%s failed to start or stopped unexpectedly: %w",
+					name, err,
+				)
 				log.Printf("%v", wrappedErr)
 				errCh <- wrappedErr
 				stop()
@@ -121,10 +132,10 @@ func run() error {
 		})
 	}
 
-	startService("pprof server", func() error { return pprofServer.Start(ctx) })
-	startService("metrics exporter", func() error { return metricsExporter.Start(ctx) })
-	startService("app server", func() error { return appServer.Start(ctx) })
-	startService("scheduler", func() error { return scheduler.Start(ctx) })
+	startService("pprof server", pprofServer.Start)
+	startService("metrics exporter", metricsExporter.Start)
+	startService("app server", appServer.Start)
+	startService("scheduler", scheduler.Start)
 
 	<-ctx.Done()
 	log.Printf("Shutdown requested: %v", ctx.Err())
