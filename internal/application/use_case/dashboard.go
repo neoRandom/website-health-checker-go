@@ -3,10 +3,13 @@ package usecase
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"http-server/internal/core/interface/driven"
 	"http-server/internal/core/interface/driver"
 	"http-server/internal/core/model"
 )
+
+const HistoryLimitCap int = 100
 
 type DashboardUseCases struct {
 	siteRepository   driven.SiteRepository
@@ -53,6 +56,11 @@ func (uc *DashboardUseCases) GetSiteDetail(
 		return nil, nil, err
 	}
 
+	if historyLimit < 1 {
+		return nil, nil, fmt.Errorf("history limit cannot be below 1")
+	}
+
+	historyLimit = min(historyLimit, HistoryLimitCap)
 	history, err := uc.resultRepository.GetHistory(ctx, id, historyLimit)
 	if err != nil {
 		return nil, nil, err

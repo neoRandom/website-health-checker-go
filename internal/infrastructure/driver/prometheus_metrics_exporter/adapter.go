@@ -12,16 +12,16 @@ type MetricsCollector interface {
 }
 
 type PrometheusMetricsExporterAdapter struct {
-	addr             string
+	port             string
 	metricsCollector MetricsCollector
 }
 
 func NewPrometheusMetricsExporterAdapter(
-	addr string,
+	port string,
 	metricsCollector MetricsCollector,
 ) *PrometheusMetricsExporterAdapter {
 	return &PrometheusMetricsExporterAdapter{
-		addr:             addr,
+		port:             port,
 		metricsCollector: metricsCollector,
 	}
 }
@@ -32,11 +32,11 @@ func (ps *PrometheusMetricsExporterAdapter) Start(ctx context.Context) error {
 	mux.Handle("/metrics", ps.metricsCollector.MetricsHandler())
 
 	srv := http.Server{
-		Addr:    ps.addr,
+		Addr:    ps.port,
 		Handler: mux,
 	}
 
-	log.Printf("Prometheus metric exporter starting at http://localhost%v...", ps.addr)
+	log.Printf("Prometheus metric exporter starting at http://localhost%v...", ps.port)
 	errCh := make(chan error, 1)
 	go func() {
 		errCh <- srv.ListenAndServe()
@@ -47,7 +47,7 @@ func (ps *PrometheusMetricsExporterAdapter) Start(ctx context.Context) error {
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		log.Printf("Prometheus metric exporter stopping at http://localhost%v...", ps.addr)
+		log.Printf("Prometheus metric exporter stopping at http://localhost%v...", ps.port)
 		if err := srv.Shutdown(shutdownCtx); err != nil {
 			return err
 		}

@@ -43,6 +43,7 @@ func (s *AppServerAdapter) handleSiteDetails(
 		return
 	}
 	if status == nil {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte(`<p class="text-sm text-neutral-600">Site not found.</p>`))
 		return
@@ -74,6 +75,7 @@ func (s *AppServerAdapter) handleGetSiteList(
 		}
 	}
 
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(dto.GetSiteListResponse{
 		Body: body,
@@ -101,6 +103,7 @@ func (s *AppServerAdapter) handleAddSite(
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(dto.SiteJSON{
 		Id:                 id,
@@ -132,6 +135,7 @@ func (s *AppServerAdapter) handleUpdateSite(
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"message": "success"}`))
 }
@@ -150,6 +154,7 @@ func (s *AppServerAdapter) handleRemoveSite(
 	err = s.removeSite(r.Context(), model.SiteID(id))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)

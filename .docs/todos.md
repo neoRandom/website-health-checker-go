@@ -8,9 +8,9 @@
 
 ## Code Quality
 
-- [ ] Improve response handling.
-    - [ ] Add error messages and runtime checks
-    - [ ] Set Headers in every endpoint
+- [x] Improve response handling.
+    - [x] Add error messages and enhance runtime checks
+    - [x] Set Headers in every endpoint
 
 - [x] Enhance background context support to improve graceful shutdowns
     - [x] Database operations

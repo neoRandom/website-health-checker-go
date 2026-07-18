@@ -9,12 +9,12 @@ import (
 )
 
 type PprofServerAdapter struct {
-	addr string
+	port string
 }
 
-func NewPprofServerAdapter(addr string) *PprofServerAdapter {
+func NewPprofServerAdapter(port string) *PprofServerAdapter {
 	return &PprofServerAdapter{
-		addr: addr,
+		port: port,
 	}
 }
 
@@ -39,11 +39,11 @@ func (ps *PprofServerAdapter) Start(ctx context.Context) error {
 	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
 
 	srv := http.Server{
-		Addr:    ps.addr,
+		Addr:    ps.port,
 		Handler: mux,
 	}
 
-	log.Printf("pprof server starting at http://localhost%v...", ps.addr)
+	log.Printf("pprof server starting at http://localhost%v...", ps.port)
 	errCh := make(chan error, 1)
 	go func() {
 		errCh <- srv.ListenAndServe()
@@ -54,7 +54,7 @@ func (ps *PprofServerAdapter) Start(ctx context.Context) error {
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		log.Printf("pprof server stopping at http://localhost%v...", ps.addr)
+		log.Printf("pprof server stopping at http://localhost%v...", ps.port)
 		if err := srv.Shutdown(shutdownCtx); err != nil {
 			return err
 		}

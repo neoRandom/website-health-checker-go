@@ -25,6 +25,9 @@ func (r *SQLiteSiteRepositoryAdapter) GetList(
 		ctx,
 		`SELECT site_id, url, expected_status_code, description FROM sites`,
 	)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}

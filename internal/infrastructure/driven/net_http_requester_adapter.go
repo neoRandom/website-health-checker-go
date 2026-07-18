@@ -20,7 +20,9 @@ func NewNetHttpRequesterAdapter(timeout time.Duration) *NetHttpRequesterAdapter 
 
 func (hr *NetHttpRequesterAdapter) CheckSite(s *model.Site) (*model.Result, error) {
 	if s.Url == "" {
-		return nil, fmt.Errorf("url for site '%v' required, none provided", s.Id)
+		return nil, fmt.Errorf(
+			"url for site '%v' required, none provided", s.Id,
+		)
 	}
 
 	req, err := http.NewRequest("HEAD", s.Url, nil)

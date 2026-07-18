@@ -15,7 +15,7 @@ type MetricsCollector interface {
 }
 
 type AppServerAdapter struct {
-	addr             string
+	port             string
 	getSiteList      driver.GetSiteList
 	addSite          driver.AddSite
 	updateSite       driver.UpdateSite
@@ -27,7 +27,7 @@ type AppServerAdapter struct {
 }
 
 func NewAppServerAdapter(
-	addr string,
+	port string,
 	getSiteList driver.GetSiteList,
 	addSite driver.AddSite,
 	updateSite driver.UpdateSite,
@@ -38,7 +38,7 @@ func NewAppServerAdapter(
 	cfg *config.Config,
 ) *AppServerAdapter {
 	return &AppServerAdapter{
-		addr:             addr,
+		port:             port,
 		getSiteList:      getSiteList,
 		addSite:          addSite,
 		updateSite:       updateSite,
@@ -69,11 +69,11 @@ func (s *AppServerAdapter) Start(ctx context.Context) error {
 	)
 
 	srv := http.Server{
-		Addr:    s.addr,
+		Addr:    s.port,
 		Handler: wMux,
 	}
 
-	log.Printf("Server starting at http://localhost%v...", s.addr)
+	log.Printf("Server starting at http://localhost%v...", s.port)
 	errCh := make(chan error, 1)
 	go func() {
 		errCh <- srv.ListenAndServe()
@@ -84,7 +84,7 @@ func (s *AppServerAdapter) Start(ctx context.Context) error {
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		log.Printf("Server stopping at http://localhost%v...", s.addr)
+		log.Printf("Server stopping at http://localhost%v...", s.port)
 		if err := srv.Shutdown(shutdownCtx); err != nil {
 			return err
 		}
