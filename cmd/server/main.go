@@ -45,7 +45,13 @@ func run() error {
 
 	// ====
 
-	db, err := sql.Open(cfg.DatabaseType, cfg.DatabasePath)
+	// TODO: Change hard-coded values for env variables
+	dataSource := fmt.Sprintf(
+		"file:%s?_journal_mode=%s&_busy_timeout=%d",
+		cfg.DatabasePath, "WAL", 10000,
+	)
+
+	db, err := sql.Open(cfg.DatabaseType, dataSource)
 	if err != nil {
 		return fmt.Errorf(
 			"open database %q at %q: %w",

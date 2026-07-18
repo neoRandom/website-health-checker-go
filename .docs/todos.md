@@ -19,7 +19,7 @@
 
 ## Issues
 
-- [ ] Fix the SQLite concurrency issue: Error worker saving site 'https://github.com': database is locked (5) (SQLITE_BUSY)
+- [x] Fix the SQLite concurrency issue: database is locked (5) (SQLITE_BUSY)
 
 ## Testing
 
