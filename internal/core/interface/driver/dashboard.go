@@ -1,11 +1,18 @@
 package driver
 
-import "http-server/internal/core/model"
+import (
+	"context"
+	"http-server/internal/core/model"
+)
 
 type SiteStatus struct {
 	Site   model.Site
 	Latest *model.Result // nil if no check has run yet
 }
 
-type GetSiteStatuses func() ([]SiteStatus, error)
-type GetSiteDetail func(id model.SiteID, historyLimit int) (*SiteStatus, []model.Result, error)
+type GetSiteStatuses func(ctx context.Context) ([]SiteStatus, error)
+type GetSiteDetail (
+	func(
+		ctx context.Context, 
+		id model.SiteID, historyLimit int,
+	) (*SiteStatus, []model.Result, error))

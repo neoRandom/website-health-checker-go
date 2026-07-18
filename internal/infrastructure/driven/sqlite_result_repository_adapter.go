@@ -1,6 +1,7 @@
 package driven
 
 import (
+	"context"
 	"database/sql"
 	"http-server/internal/core/model"
 	"time"
@@ -16,11 +17,14 @@ func NewSQLiteResultRepositoryAdapter(db *sql.DB) *SQLiteResultRepositoryAdapter
 	}
 }
 
-func (a *SQLiteResultRepositoryAdapter) GetSiteLatest(siteId model.SiteID) (*model.Result, error) {
+func (a *SQLiteResultRepositoryAdapter) GetSiteLatest(
+	ctx context.Context, siteId model.SiteID,
+) (*model.Result, error) {
 	var r model.Result
 	var responseTimeMs, unixCheckedAt int64
 
-	err := a.db.QueryRow(
+	err := a.db.QueryRowContext(
+		ctx,
 		`
 			SELECT
 				result_id, 
@@ -56,9 +60,10 @@ func (a *SQLiteResultRepositoryAdapter) GetSiteLatest(siteId model.SiteID) (*mod
 }
 
 func (a *SQLiteResultRepositoryAdapter) GetHistory(
-	siteId model.SiteID, limit int,
+	ctx context.Context, siteId model.SiteID, limit int,
 ) ([]model.Result, error) {
-	rows, err := a.db.Query(
+	rows, err := a.db.QueryContext(
+		ctx,
 		`
 			SELECT
 				result_id, site_id, status_code, is_healthy,
@@ -100,8 +105,11 @@ func (a *SQLiteResultRepositoryAdapter) GetHistory(
 	return out, rows.Err()
 }
 
-func (a *SQLiteResultRepositoryAdapter) Save(r *model.Result) (model.ResultID, error) {
-	results, err := a.db.Exec(
+func (a *SQLiteResultRepositoryAdapter) Save(
+	ctx context.Context, r *model.Result,
+) (model.ResultID, error) {
+	results, err := a.db.ExecContext(
+		ctx,
 		`
 			INSERT INTO results
 			(

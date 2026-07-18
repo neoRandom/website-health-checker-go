@@ -1,9 +1,12 @@
 package driven
 
-import "http-server/internal/core/model"
+import (
+	"context"
+	"http-server/internal/core/model"
+)
 
 type ResultRepository interface {
-	GetSiteLatest(siteId model.SiteID) (*model.Result, error)
-	GetHistory(siteId model.SiteID, limit int) ([]model.Result, error)
-	Save(r *model.Result) (model.ResultID, error)
+	GetSiteLatest(ctx context.Context, siteId model.SiteID) (*model.Result, error)
+	GetHistory(ctx context.Context, siteId model.SiteID, limit int) ([]model.Result, error)
+	Save(ctx context.Context, r *model.Result) (model.ResultID, error)
 }

@@ -1,6 +1,7 @@
 package driven
 
 import (
+	"context"
 	"http-server/internal/core/interface/driven"
 	"net/http"
 	"strconv"
@@ -26,7 +27,9 @@ type PrometheusMetricsCollector struct {
 	requestDuration *prometheus.HistogramVec
 }
 
-func NewPrometheusMetricsCollector(siteRepository driven.SiteRepository) *PrometheusMetricsCollector {
+func NewPrometheusMetricsCollector(
+	ctx context.Context, siteRepository driven.SiteRepository,
+) *PrometheusMetricsCollector {
 	totalRequests := prometheus.NewCounter(prometheus.CounterOpts{
 		Name: "http_requests_total",
 		Help: "Total number of HTTP requests",
@@ -42,7 +45,7 @@ func NewPrometheusMetricsCollector(siteRepository driven.SiteRepository) *Promet
 		Name: "monitored_targets",
 		Help: "Number of actively monitored targets",
 	}, func() float64 {
-		c, _ := siteRepository.Count()
+		c, _ := siteRepository.Count(ctx)
 		return float64(c)
 	})
 

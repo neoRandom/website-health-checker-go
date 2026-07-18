@@ -12,8 +12,10 @@
     - [ ] Add error messages and runtime checks
     - [ ] Set Headers in every endpoint
 
-- [ ] Add context (ctx) to every part that I'll benefit from having it
-    - [ ] Database operations
+- [x] Enhance background context support to improve graceful shutdowns
+    - [x] Database operations
+    - [x] Services
+    - [x] Schedules
 
 ## Issues
 

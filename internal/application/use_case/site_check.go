@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"http-server/internal/core/interface/driven"
 	"http-server/internal/core/model"
 	"log"
@@ -22,12 +23,14 @@ func NewSiteCheckUseCases(
 	}
 }
 
-func (uc *SiteCheckUseCases) CheckSites(targets []model.Site) error {
+func (uc *SiteCheckUseCases) CheckSites(
+	ctx context.Context, targets []model.Site,
+) error {
 	var wg sync.WaitGroup
 
 	for _, t := range targets {
 		wg.Add(1)
-		go uc.worker(&t, &wg)
+		go uc.worker(ctx, &t, &wg)
 	}
 
 	wg.Wait()
@@ -35,7 +38,9 @@ func (uc *SiteCheckUseCases) CheckSites(targets []model.Site) error {
 	return nil
 }
 
-func (uc *SiteCheckUseCases) worker(target *model.Site, wg *sync.WaitGroup) {
+func (uc *SiteCheckUseCases) worker(
+	ctx context.Context, target *model.Site, wg *sync.WaitGroup,
+) {
 	defer wg.Done()
 
 	results, err := uc.httpRequester.CheckSite(target)
@@ -44,7 +49,7 @@ func (uc *SiteCheckUseCases) worker(target *model.Site, wg *sync.WaitGroup) {
 		return
 	}
 
-	_, err = uc.resultRepository.Save(results)
+	_, err = uc.resultRepository.Save(ctx, results)
 	if err != nil {
 		log.Printf("Error worker saving site '%s': %s", target.Url, err)
 		return

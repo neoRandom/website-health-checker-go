@@ -28,7 +28,7 @@ func NewSchedulerAdapter(
 }
 
 func (a *SchedulerAdapter) Start(ctx context.Context) error {
-	targets, err := a.siteRepository.GetList()
+	targets, err := a.siteRepository.GetList(ctx)
 	if err != nil {
 		return fmt.Errorf("load scheduled targets: %w", err)
 	}
@@ -46,16 +46,22 @@ func (a *SchedulerAdapter) Start(ctx context.Context) error {
 				return
 
 			case <-ticker.C:
-				updatedTargets, err := a.siteRepository.GetList()
+				updatedTargets, err := a.siteRepository.GetList(ctx)
 				if err != nil {
-					log.Printf("Scheduler could not refresh targets: %v", fmt.Errorf("refresh scheduled targets: %w", err))
+					log.Printf(
+						"Scheduler could not refresh targets: %v", 
+						fmt.Errorf("refresh scheduled targets: %w", err),
+					)
 				} else {
 					targets = updatedTargets
 				}
 
 				log.Printf("Scheduler tick: checking %d targets", len(targets))
-				if err := a.checkSites(targets); err != nil {
-					log.Printf("Scheduler check failed: %v", fmt.Errorf("check scheduled targets: %w", err))
+				if err := a.checkSites(ctx, targets); err != nil {
+					log.Printf(
+						"Scheduler check failed: %v", 
+						fmt.Errorf("check scheduled targets: %w", err),
+					)
 				}
 			}
 		}

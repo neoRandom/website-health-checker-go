@@ -1,6 +1,7 @@
 package driven
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"http-server/internal/core/model"
@@ -17,8 +18,11 @@ func NewSQLiteSiteRepositoryAdapter(db *sql.DB) *SQLiteSiteRepositoryAdapter {
 	}
 }
 
-func (r *SQLiteSiteRepositoryAdapter) GetList() ([]model.Site, error) {
-	rows, err := r.db.Query(
+func (r *SQLiteSiteRepositoryAdapter) GetList(
+	ctx context.Context,
+) ([]model.Site, error) {
+	rows, err := r.db.QueryContext(
+		ctx,
 		`SELECT site_id, url, expected_status_code, description FROM sites`,
 	)
 	if err != nil {
@@ -46,10 +50,13 @@ func (r *SQLiteSiteRepositoryAdapter) GetList() ([]model.Site, error) {
 	return list, nil
 }
 
-func (r *SQLiteSiteRepositoryAdapter) GetByID(id model.SiteID) (*model.Site, error) {
+func (r *SQLiteSiteRepositoryAdapter) GetByID(
+	ctx context.Context, id model.SiteID,
+) (*model.Site, error) {
 	var s model.Site
 	
-	err := r.db.QueryRow(
+	err := r.db.QueryRowContext(
+		ctx,
 		`SELECT site_id, url, expected_status_code, description FROM sites WHERE site_id = ?`,
 		id,
 	).Scan(&s.Id, &s.Url, &s.ExpectedStatusCode, &s.Description)
@@ -63,8 +70,11 @@ func (r *SQLiteSiteRepositoryAdapter) GetByID(id model.SiteID) (*model.Site, err
 	return &s, nil
 }
 
-func (r *SQLiteSiteRepositoryAdapter) Save(s *model.Site) (model.SiteID, error) {
-	results, err := r.db.Exec(
+func (r *SQLiteSiteRepositoryAdapter) Save(
+	ctx context.Context, s *model.Site,
+) (model.SiteID, error) {
+	results, err := r.db.ExecContext(
+		ctx,
 		`
 			INSERT INTO sites (url, expected_status_code, description) 
 			VALUES (?, ?, ?)
@@ -79,7 +89,9 @@ func (r *SQLiteSiteRepositoryAdapter) Save(s *model.Site) (model.SiteID, error) 
 	return model.SiteID(id), err
 }
 
-func (r *SQLiteSiteRepositoryAdapter) Update(s *model.Site) error {
+func (r *SQLiteSiteRepositoryAdapter) Update(
+	ctx context.Context, s *model.Site,
+) error {
 	var queryParts []string
 	var args []any
 	argCounter := 1
@@ -121,7 +133,7 @@ func (r *SQLiteSiteRepositoryAdapter) Update(s *model.Site) error {
 		argCounter,
 	)
 
-	_, err := r.db.Exec(finalQuery, args...)
+	_, err := r.db.ExecContext(ctx, finalQuery, args...)
 	if err != nil {
 		return err
 	}
@@ -129,8 +141,10 @@ func (r *SQLiteSiteRepositoryAdapter) Update(s *model.Site) error {
 	return nil
 }
 
-func (r *SQLiteSiteRepositoryAdapter) Remove(id model.SiteID) error {
-	_, err := r.db.Exec(`DELETE FROM sites WHERE site_id = ?`, id)
+func (r *SQLiteSiteRepositoryAdapter) Remove(
+	ctx context.Context, id model.SiteID,
+) error {
+	_, err := r.db.ExecContext(ctx, `DELETE FROM sites WHERE site_id = ?`, id)
 	if err != nil {
 		return err
 	}
@@ -138,8 +152,10 @@ func (r *SQLiteSiteRepositoryAdapter) Remove(id model.SiteID) error {
 	return nil
 }
 
-func (r *SQLiteSiteRepositoryAdapter) Count() (uint64, error) {
+func (r *SQLiteSiteRepositoryAdapter) Count(
+	ctx context.Context,
+) (uint64, error) {
 	var c uint64
-	err := r.db.QueryRow(`SELECT COUNT(*) FROM sites`).Scan(&c)
+	err := r.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM sites`).Scan(&c)
 	return c, err
 }

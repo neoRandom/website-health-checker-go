@@ -15,7 +15,7 @@ import (
 func (s *AppServerAdapter) handleHome(
 	w http.ResponseWriter, r *http.Request,
 ) {
-	statuses, err := s.getSiteStatuses()
+	statuses, err := s.getSiteStatuses(r.Context())
 	if err != nil {
 		http.Error(w, "unable to load sites", http.StatusInternalServerError)
 		return
@@ -37,7 +37,7 @@ func (s *AppServerAdapter) handleSiteDetails(
 		return
 	}
 	
-	status, history, err := s.getSiteDetail(model.SiteID(id), 100)
+	status, history, err := s.getSiteDetail(r.Context(), model.SiteID(id), 100)
 	if err != nil {
 		http.Error(w, "unable to load site", http.StatusInternalServerError)
 		return
@@ -59,7 +59,7 @@ func (s *AppServerAdapter) handleSiteDetails(
 func (s *AppServerAdapter) handleGetSiteList(
 	w http.ResponseWriter, r *http.Request,
 ) {
-	sList, err := s.getSiteList()
+	sList, err := s.getSiteList(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -95,7 +95,7 @@ func (s *AppServerAdapter) handleAddSite(
 		Description:        req.Description,
 	}
 
-	id, err := s.addSite(site)
+	id, err := s.addSite(r.Context(), site)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -126,7 +126,7 @@ func (s *AppServerAdapter) handleUpdateSite(
 		Description:        req.Description,
 	}
 
-	err := s.updateSite(site)
+	err := s.updateSite(r.Context(), site)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -147,7 +147,7 @@ func (s *AppServerAdapter) handleRemoveSite(
 		return
 	}
 
-	err = s.removeSite(model.SiteID(id))
+	err = s.removeSite(r.Context(), model.SiteID(id))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}

@@ -66,7 +66,7 @@ func run() error {
 	siteRepository := driven.NewSQLiteSiteRepositoryAdapter(db)
 	resultRepository := driven.NewSQLiteResultRepositoryAdapter(db)
 
-	metricsCollector := driven.NewPrometheusMetricsCollector(siteRepository)
+	metricsCollector := driven.NewPrometheusMetricsCollector(ctx, siteRepository)
 	httpRequester := driven.NewNetHttpRequesterAdapter(
 		time.Duration(cfg.CheckTimeout) * time.Second,
 	)
